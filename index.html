@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111114">
+<title>Queue Management — Redesign Mockup v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Hanken+Grotesk:wght@200;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent: #cc4c1a;
+    --accent-soft: rgba(204, 76, 26, 0.12);
+    --accent-glow: rgba(204, 76, 0, 0.08);
+    --bg: #111114; --bg-raised: #18181c; --bg-card: #1c1c21;
+    --bg-glass: rgba(255, 255, 255, 0.04); --bg-hover: rgba(255, 255, 255, 0.07);
+    --border: rgba(255, 255, 255, 0.08); --border-light: rgba(255, 255, 255, 0.12);
+    --text: rgba(255, 255, 255, 0.92); --text-muted: rgba(255, 255, 255, 0.55); --text-dim: rgba(255, 255, 255, 0.35);
+    --primary: #5b9bf5; --primary-bg: rgba(91, 155, 245, 0.12);
+    --success: #34d399; --success-bg: rgba(52, 211, 153, 0.1);
+    --warning: #f59e0b; --warning-bg: rgba(245, 158, 11, 0.1);
+    --destructive: #f87171; --destructive-bg: rgba(248, 113, 113, 0.1);
+    --info: #2dd4a8; --info-bg: rgba(45, 212, 168, 0.1);
+    --purple: #a78bfa; --purple-bg: rgba(167, 139, 250, 0.12);
+    --radius: 8px; --radius-sm: 6px; --radius-lg: 12px;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px; color: var(--text); background: var(--bg);
+  }
+  body { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar { width: 210px; background: var(--bg-raised); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 16px 8px; gap: 2px; flex-shrink: 0; }
+  .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 0 12px 20px; }
+  .sidebar-logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sidebar-logo-icon svg { width: 16px; height: 16px; color: #fff; }
+  .sidebar-logo-text { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 17px;
+    color: var(--text); letter-spacing: -0.3px; }
+  .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px;
+    border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
+    font-size: 14px; font-weight: 500; transition: all .12s; text-decoration: none; }
+  .sidebar-item:hover { background: var(--bg-glass); color: var(--text); }
+  .sidebar-item.active { background: var(--bg-hover); color: var(--text); }
+  .sidebar-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  /* ── Main ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .page-nav { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg-raised); padding: 0 24px; flex-shrink: 0; }
+  .page-nav-item { padding: 12px 16px; color: var(--text-muted); cursor: pointer; font-size: 13px;
+    border-bottom: 2px solid transparent; transition: all .15s; font-weight: 500; }
+  .page-nav-item:hover { color: var(--text); }
+  .page-nav-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .page-nav-label { font-size: 11px; color: var(--text-dim); padding: 12px 16px 12px 0; display: flex; align-items: center; }
+
+  .page { display: none; flex: 1; overflow-y: auto; }
+  .page.active { display: flex; flex-direction: column; }
+  .page-content { width: 100%; padding: 24px 32px 40px; }
+
+  /* ── Shared ── */
+  .breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; cursor: pointer; }
+  .breadcrumb:hover { color: var(--accent); }
+  .page-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 15px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-top: 8px; }
+  .header-left { display: flex; flex-direction: column; }
+  .header-right { display: flex; gap: 8px; align-items: center; }
+
+  .btn { padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border-light); background: var(--bg-card); color: var(--text);
+    display: inline-flex; align-items: center; gap: 6px; transition: all .15s; white-space: nowrap; }
+  .btn:hover { background: var(--bg-hover); border-color: rgba(255,255,255,0.18); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { opacity: .9; background: #b84317; }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+  .btn-ghost:hover { color: var(--text); background: var(--bg-glass); }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  .badge { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.04em; border: 1px solid var(--border-light); }
+  .badge-count { background: var(--bg-glass); color: var(--text-muted); border-color: var(--border-light); }
+  .badge-role { background: var(--purple-bg); color: var(--purple); border-color: rgba(167,139,250,0.2); }
+  .badge-default { background: var(--bg-glass); color: var(--text-dim); border-color: var(--border-light); }
+
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+  .card-hover { cursor: pointer; transition: all .15s; }
+  .card-hover:hover { border-color: var(--border-light); background: rgba(255,255,255,0.05); }
+
+  .section { margin-bottom: 28px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .section-title-muted { color: var(--text-muted); font-weight: 400; font-size: 13px; }
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
+  .stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; }
+  .stat-value { font-family: 'Hanken Grotesk', sans-serif; font-size: 24px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .stat-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .stat-value.warning { color: var(--warning); }
+  .stat-value.destructive { color: var(--destructive); }
+  .stat-value.success { color: var(--success); }
+
+  .toggle-btn { padding: 6px 12px; font-size: 12px; font-weight: 500; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--border-light); background: var(--bg-glass); color: var(--text-muted); transition: all .15s; }
+  .toggle-btn.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+  /* ── Tab bar (for detail pages) ── */
+  .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .tab-item { padding: 10px 16px; color: var(--text-muted); cursor: pointer; font-size: 13px;
+    border-bottom: 2px solid transparent; transition: all .15s; font-weight: 500; }
+  .tab-item:hover { color: var(--text); }
+  .tab-item.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  /* ── Alert banner ── */
+  .alert-banner { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: var(--radius);
+    margin-bottom: 12px; font-size: 13px; }
+  .alert-banner.warn { background: var(--warning-bg); border: 1px solid rgba(245,158,11,.25); color: var(--warning); }
+  .alert-banner.danger { background: var(--destructive-bg); border: 1px solid rgba(239,68,68,.25); color: var(--destructive); }
+  .alert-icon { flex-shrink: 0; font-size: 16px; }
+  .alert-text { flex: 1; }
+  .alert-action { font-size: 12px; font-weight: 500; cursor: pointer; text-decoration: underline; white-space: nowrap; }
+
+  /* ════════════════════════════════════════════════
+     PAGE 1: QUEUE LIST (table layout)
+     ════════════════════════════════════════════════ */
+  .health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .health-dot.healthy { background: var(--success); box-shadow: 0 0 8px rgba(52,211,153,.35); }
+  .health-dot.warning { background: var(--warning); box-shadow: 0 0 8px rgba(245,158,11,.35); }
+  .health-dot.critical { background: var(--destructive); box-shadow: 0 0 8px rgba(248,113,113,.35); }
+
+  .queue-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: .08em; padding: 16px 16px 8px; }
+  .queue-table-header { display: grid; grid-template-columns: 1fr 140px 90px 100px 110px 32px; gap: 12px; padding: 12px 20px;
+    border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: .06em; cursor: pointer; user-select: none; white-space: nowrap; }
+  .queue-table-header > span { display: inline-flex; align-items: center; gap: 6px; }
+  .queue-table-header > span:not(:first-child):not(:last-child) { justify-content: center; }
+  .queue-table-row { display: grid; grid-template-columns: 1fr 140px 90px 100px 110px 32px; gap: 12px; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
+  .queue-table-row:hover { background: var(--bg-hover); }
+  .queue-table-row:last-child { border-bottom: none; }
+  .queue-table-row.warn-bg { background: rgba(245,158,11,.04); }
+  .queue-table-row.warn-bg:hover { background: rgba(245,158,11,.08); }
+  .queue-table-row.critical-bg { background: rgba(239,68,68,.04); }
+  .queue-table-row.critical-bg:hover { background: rgba(239,68,68,.08); }
+  .queue-name-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .queue-name { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .queue-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .queue-num { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 500; text-align: center; font-variant-numeric: tabular-nums; }
+  .queue-chevron { color: var(--text-dim); font-size: 14px; text-align: center; }
+
+  /* ════════════════════════════════════════════════
+     PAGE 2: DETAIL — Overview
+     ════════════════════════════════════════════════ */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+
+  .detail-columns { display: grid; grid-template-columns: 1fr 340px; gap: 32px; }
+  .detail-main { min-width: 0; }
+  .detail-sidebar { min-width: 0; }
+
+  /* Operator compact table (overview) */
+  .op-table { width: 100%; }
+  .op-table-header { display: grid; grid-template-columns: 1fr 110px 110px 100px 160px; gap: 12px; padding: 12px 20px;
+    border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+  .op-table-header > span { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .op-table-header > span:first-child { justify-content: flex-start; }
+  .op-table-header > span:last-child { justify-content: flex-start; }
+  .op-row { display: grid; grid-template-columns: 1fr 110px 110px 100px 160px; gap: 12px; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid var(--border); }
+
+  /* SLA cell */
+  .sla-cell { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; text-align: center; font-variant-numeric: tabular-nums; }
+  .sla-ok { color: var(--text-muted); }
+  .sla-warn { color: var(--warning); }
+  .sla-critical { color: var(--destructive); }
+  .sla-breach { color: var(--destructive); animation: urgent-pulse 2s ease-in-out infinite; }
+  .op-row:last-child { border-bottom: none; }
+
+  /* Guest assignee collapsible section */
+  .guest-toggle { display: flex; align-items: center; gap: 8px; padding: 10px 16px; cursor: pointer;
+    font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); transition: color .15s;
+    user-select: none; }
+  .guest-toggle:hover { color: var(--text); }
+  .guest-toggle-arrow { font-size: 10px; transition: transform .2s; display: inline-block; }
+  .guest-toggle-arrow.open { transform: rotate(90deg); }
+  .guest-rows { overflow: hidden; }
+  .guest-rows.collapsed { max-height: 0; }
+  .guest-rows.expanded { max-height: 500px; }
+  .guest-row { display: grid; grid-template-columns: 1fr 110px 110px 100px 160px; gap: 12px; align-items: center;
+    padding: 12px 20px 12px 32px; border-bottom: 1px solid var(--border); }
+  .guest-row:last-child { border-bottom: none; }
+  .guest-label { font-size: 11px; color: var(--text-dim); font-style: italic; }
+  .op-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .op-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+  .avatar-blue { background: rgba(59,130,246,.2); color: var(--primary); }
+  .avatar-green { background: rgba(34,197,94,.2); color: var(--success); }
+  .avatar-purple { background: rgba(168,85,247,.2); color: var(--purple); }
+  .avatar-orange { background: rgba(245,158,11,.2); color: var(--warning); }
+  .op-name { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .op-role { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .op-tickets { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; text-align: center; font-variant-numeric: tabular-nums; }
+
+  /* Clickable elements in workload table */
+  .op-info.clickable { cursor: pointer; border-radius: var(--radius-sm); padding: 2px 4px; margin: -2px -4px; transition: background .15s; }
+  .op-info.clickable:hover { background: var(--bg-hover); }
+  .op-info.clickable:hover .op-name { color: var(--accent); }
+  .op-tickets.clickable { cursor: pointer; border-radius: var(--radius-sm); padding: 2px 6px; margin: -2px -6px; transition: all .15s; }
+  .op-tickets.clickable:hover { background: var(--accent-soft); color: var(--accent) !important; }
+  .capacity-bar.clickable { cursor: pointer; border-radius: var(--radius-sm); padding: 2px 4px; margin: -2px -4px; transition: background .15s; }
+  .capacity-bar.clickable:hover { background: var(--bg-hover); }
+  .capacity-bar.clickable:hover .capacity-label { color: var(--accent); }
+
+  /* Clickable stat cards */
+  .stat-card.clickable { cursor: pointer; transition: all .15s; }
+  .stat-card.clickable:hover { border-color: var(--border-light); background: var(--bg-hover); }
+
+  /* Unassigned header row — matches op-row grid */
+  .unassigned-row { display: grid; grid-template-columns: 1fr 110px 110px 100px 160px; gap: 12px; align-items: center;
+    padding: 16px 20px; border-bottom: 2px solid var(--border); cursor: pointer; transition: background .15s; }
+  .unassigned-row:hover { filter: brightness(1.1); }
+  .unassigned-row .unassigned-label { font-size: 14px; font-weight: 600; }
+  .unassigned-row .unassigned-sub { font-size: 11px; margin-top: 1px; }
+  .unassigned-row.ok { background: transparent; }
+  .unassigned-row.ok .unassigned-label { color: var(--text); }
+  .unassigned-row.ok .unassigned-sub { color: var(--text-dim); }
+  .unassigned-row.warn { background: var(--warning-bg); }
+  .unassigned-row.warn .unassigned-label { color: var(--warning); }
+  .unassigned-row.warn .unassigned-sub { color: rgba(245,158,11,.7); }
+  .unassigned-row.critical { background: var(--destructive-bg); }
+  .unassigned-row.critical .unassigned-label { color: var(--destructive); }
+  .unassigned-row.critical .unassigned-sub { color: rgba(239,68,68,.7); }
+  @keyframes urgent-pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+  .unassigned-row .sla-cell.sla-breach { animation: none; }
+
+  .capacity-bar { display: flex; align-items: center; gap: 6px; }
+  .capacity-track { flex: 1; height: 6px; background: var(--bg-hover); border-radius: 3px; overflow: hidden; }
+  .capacity-fill { height: 100%; border-radius: 3px; }
+  .capacity-fill.low { background: var(--success); }
+  .capacity-fill.medium { background: var(--warning); }
+  .capacity-fill.high { background: var(--destructive); }
+  .capacity-label { font-size: 11px; color: var(--text-dim); width: 28px; text-align: right; font-variant-numeric: tabular-nums; transition: color .15s; }
+
+  /* Sidebar cards */
+  .side-card { padding: 16px; margin-bottom: 12px; }
+  .side-card-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: .08em; margin-bottom: 12px; }
+  .side-item { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+  .side-item-label { font-size: 13px; color: var(--text-muted); }
+  .side-item-value { font-size: 13px; font-weight: 500; }
+
+  .link-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; cursor: pointer;
+    font-size: 13px; color: var(--text-muted); transition: color .15s; }
+  .link-row:hover { color: var(--accent); }
+  .link-row svg { width: 14px; height: 14px; }
+  .link-arrow { margin-left: auto; font-size: 11px; color: var(--text-dim); }
+
+  /* Sparkline */
+  .sparkline { display: flex; align-items: flex-end; gap: 2px; height: 32px; }
+  .spark-bar { width: 4px; border-radius: 1px; opacity: .6; }
+  .spark-bar:last-child { opacity: 1; }
+
+  /* ════════════════════════════════════════════════
+     PAGE 3: DETAIL — Team (roster management)
+     ════════════════════════════════════════════════ */
+  .team-table-header { display: grid; grid-template-columns: 1fr 90px 1fr 70px; gap: 12px; padding: 10px 16px;
+    border-bottom: 1px solid var(--border); font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: .06em; cursor: pointer; user-select: none; }
+  .team-row { display: grid; grid-template-columns: 1fr 90px 1fr 70px; gap: 12px; align-items: center;
+    padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .team-row:last-child { border-bottom: none; }
+  .team-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+
+  /* Schedule & availability */
+  .schedule-text { font-size: 12px; color: var(--text-muted); }
+  .availability-ok { font-size: 12px; color: var(--success); }
+  .availability-warn { font-size: 12px; color: var(--warning); font-weight: 500; }
+  .availability-reason { font-size: 11px; color: var(--text-dim); font-style: italic; margin-top: 2px; }
+
+  /* Role dropdown */
+  .role-select { font-size: 12px; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 4px 8px; cursor: pointer; width: 100%;
+    appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23a1a1aa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 6px center; padding-right: 22px; }
+  .role-select:hover { border-color: var(--border-light); color: var(--text); }
+
+  /* Remove button */
+  .btn-remove { font-size: 12px; color: var(--text-dim); background: none; border: none; cursor: pointer;
+    padding: 4px 8px; border-radius: var(--radius-sm); transition: all .15s; text-align: right; }
+  .btn-remove:hover { color: var(--destructive); background: var(--destructive-bg); }
+
+  /* ════════════════════════════════════════════════
+     PAGE 4: DETAIL — Settings
+     ════════════════════════════════════════════════ */
+  .settings-layout { display: flex; gap: 32px; min-height: 400px; }
+  .settings-nav-col { width: 180px; flex-shrink: 0; }
+  .settings-nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 13px;
+    color: var(--text-muted); cursor: pointer; border-radius: var(--radius-sm); transition: all .15s; margin-bottom: 2px; }
+  .settings-nav-item:hover { color: var(--text); background: var(--bg-hover); }
+  .settings-nav-item.active { color: var(--text); background: var(--accent-soft); }
+  .settings-nav-item.disabled { opacity: .45; cursor: default; pointer-events: none; }
+  .settings-nav-item .soon-badge { margin-left: auto; font-size: 9px; background: var(--bg-hover);
+    color: var(--text-dim); padding: 1px 5px; border-radius: 3px; }
+  .settings-nav-sep { height: 1px; background: var(--border); margin: 6px 0; }
+  .settings-nav-item.danger { color: var(--destructive); }
+  .settings-nav-item.danger:hover { background: var(--destructive-bg); }
+  .settings-content-col { flex: 1; min-width: 0; max-width: 640px; }
+  .settings-section-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .settings-section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+
+  .form-group { margin-bottom: 20px; }
+  .form-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 8px; display: block; }
+  .form-hint { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+  .form-input { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm); color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .form-select { appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23a1a1aa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; }
+  .form-textarea { width: 100%; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm); color: var(--text); font-size: 13px; outline: none; resize: vertical;
+    min-height: 60px; font-family: 'DM Sans', sans-serif; transition: border-color .15s; }
+  .form-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .form-row { display: flex; gap: 16px; }
+  .form-row > * { flex: 1; }
+
+  /* Business hours */
+  .bh-grid { display: grid; gap: 6px; }
+  .bh-row { display: flex; align-items: center; gap: 12px; }
+  .bh-day { width: 48px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .bh-input { width: 80px; padding: 6px 8px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); font-size: 12px; text-align: center; }
+  .bh-dash { color: var(--text-dim); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+
+<!-- ═══ Sidebar ═══ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+    <span class="sidebar-logo-text">STLabs</span>
+  </div>
+  <a class="sidebar-item" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</a>
+  <a class="sidebar-item" title="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>Inbox</a>
+  <a class="sidebar-item" title="Tickets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/></svg>Tickets</a>
+  <a class="sidebar-item active" title="Queues"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>Queues</a>
+  <a class="sidebar-item" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09"/></svg>Settings</a>
+</nav>
+
+<div class="main">
+
+  <!-- ════════════════════════════════════════════════════
+       PAGE 1: QUEUE LIST
+       "Which queues need attention right now?"
+       ════════════════════════════════════════════════════ -->
+  <div class="page active" id="page-list">
+    <div class="page-content">
+      <div class="header-row">
+        <div class="header-left">
+          <div class="page-title">Queues <span class="badge badge-count" style="font-size:13px; vertical-align:middle; margin-left:6px;">6</span></div>
+        </div>
+        <div class="header-right">
+          <div style="display:flex; gap:4px;">
+            <button class="toggle-btn active">Active</button>
+            <button class="toggle-btn">Archived</button>
+          </div>
+          <button class="btn btn-primary">+ Create queue</button>
+        </div>
+      </div>
+
+      <!-- Scope tabs -->
+      <div class="tab-bar">
+        <div class="tab-item active" onclick="showQueueTab('my')">My Queues <span class="badge badge-count" style="font-size:10px; vertical-align:middle; margin-left:4px;">3</span></div>
+        <div class="tab-item" onclick="showQueueTab('all')">All Queues <span class="badge badge-count" style="font-size:10px; vertical-align:middle; margin-left:4px;">6</span></div>
+        <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
+        <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
+      </div>
+
+      <!-- MY QUEUES tab -->
+      <div id="queue-tab-my">
+        <div class="card" style="padding:0; overflow:hidden;">
+          <div class="queue-table-header">
+            <span>Queue <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
+            <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); font-size:10px; vertical-align:middle;">68</span></span>
+            <span style="text-align:center;">Open</span>
+            <span style="text-align:center;">Operators</span>
+            <span style="text-align:center;">Next SLA</span>
+            <span></span>
+          </div>
+          <div class="queue-table-row critical-bg" onclick="showPage('overview')">
+            <div class="queue-name-cell">
+              <div class="health-dot critical"></div>
+              <div><div class="queue-name">Network Operations</div><div class="queue-desc">Infrastructure incidents, connectivity</div></div>
+            </div>
+            <div class="queue-num" style="color:var(--destructive);">32</div>
+            <div class="queue-num">50</div>
+            <div class="queue-num">4</div>
+            <div class="sla-cell sla-breach">18m</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+          <div class="queue-table-row warn-bg">
+            <div class="queue-name-cell">
+              <div class="health-dot warning"></div>
+              <div><div class="queue-name">Desktop Support</div><div class="queue-desc">Hardware, software, access requests</div></div>
+            </div>
+            <div class="queue-num" style="color:var(--warning);">24</div>
+            <div class="queue-num">55</div>
+            <div class="queue-num">6</div>
+            <div class="sla-cell sla-warn">1h 22m</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+          <div class="queue-table-row warn-bg">
+            <div class="queue-name-cell">
+              <div class="health-dot warning"></div>
+              <div><div class="queue-name">General IT</div><div class="queue-desc">Catch-all for unrouted requests</div></div>
+            </div>
+            <div class="queue-num" style="color:var(--warning);">12</div>
+            <div class="queue-num">21</div>
+            <div class="queue-num">2</div>
+            <div class="sla-cell sla-warn">3h 45m</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALL QUEUES tab -->
+      <div id="queue-tab-all" style="display:none;">
+        <div class="card" style="padding:0; overflow:hidden;">
+          <div class="queue-table-header">
+            <span>Queue <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
+            <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); font-size:10px; vertical-align:middle;">83</span></span>
+            <span style="text-align:center;">Open</span>
+            <span style="text-align:center;">Operators</span>
+            <span style="text-align:center;">Next SLA</span>
+            <span></span>
+          </div>
+          <div class="queue-table-row critical-bg" onclick="showPage('overview')">
+            <div class="queue-name-cell">
+              <div class="health-dot critical"></div>
+              <div><div class="queue-name">Network Operations</div><div class="queue-desc">Infrastructure incidents, connectivity</div></div>
+            </div>
+            <div class="queue-num" style="color:var(--destructive);">32</div>
+            <div class="queue-num">50</div>
+            <div class="queue-num">4</div>
+            <div class="sla-cell sla-breach">18m</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+          <div class="queue-table-row warn-bg">
+            <div class="queue-name-cell">
+              <div class="health-dot warning"></div>
+              <div><div class="queue-name">Desktop Support</div><div class="queue-desc">Hardware, software, access requests</div></div>
+            </div>
+            <div class="queue-num" style="color:var(--warning);">24</div>
+            <div class="queue-num">55</div>
+            <div class="queue-num">6</div>
+            <div class="sla-cell sla-warn">1h 22m</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+          <div class="queue-table-row">
+            <div class="queue-name-cell">
+              <div class="health-dot healthy"></div>
+              <div><div class="queue-name">Security &amp; Compliance</div><div class="queue-desc">Vulnerability reports, access reviews</div></div>
+            </div>
+            <div class="queue-num">5</div>
+            <div class="queue-num">17</div>
+            <div class="queue-num">5</div>
+            <div class="sla-cell sla-ok">&lt; 1d</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+          <div class="queue-table-row">
+            <div class="queue-name-cell">
+              <div class="health-dot healthy"></div>
+              <div><div class="queue-name">Cloud Infrastructure</div><div class="queue-desc">AWS, GCP provisioning and issues</div></div>
+            </div>
+            <div class="queue-num">8</div>
+            <div class="queue-num">23</div>
+            <div class="queue-num">4</div>
+            <div class="sla-cell sla-ok">6h 10m</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+          <div class="queue-table-row">
+            <div class="queue-name-cell">
+              <div class="health-dot healthy"></div>
+              <div><div class="queue-name">Database Admin</div><div class="queue-desc">Schema changes, performance, backups</div></div>
+            </div>
+            <div class="queue-num">2</div>
+            <div class="queue-num">9</div>
+            <div class="queue-num">3</div>
+            <div class="sla-cell sla-ok">&lt; 1d</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+          <div class="queue-table-row warn-bg">
+            <div class="queue-name-cell">
+              <div class="health-dot warning"></div>
+              <div><div class="queue-name">General IT</div><div class="queue-desc">Catch-all for unrouted requests</div></div>
+            </div>
+            <div class="queue-num" style="color:var(--warning);">12</div>
+            <div class="queue-num">21</div>
+            <div class="queue-num">2</div>
+            <div class="sla-cell sla-warn">3h 45m</div>
+            <div class="queue-chevron">&rsaquo;</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROUTING tab stub -->
+      <div id="queue-tab-routing" style="display:none;">
+        <div class="card" style="padding:48px 24px; text-align:center; border-style:dashed;">
+          <div style="font-size:24px; margin-bottom:12px;">&#128268;</div>
+          <div style="font-size:15px; font-weight:600; margin-bottom:4px;">Routing Rules</div>
+          <div style="font-size:13px; color:var(--text-muted); max-width:400px; margin:0 auto;">
+            Deterministic routing rules that assign incoming tickets to queues based on ticket properties (priority, type, category, requester).
+          </div>
+          <div style="font-size:12px; color:var(--text-dim); margin-top:16px;">Coming soon</div>
+        </div>
+      </div>
+
+      <!-- REPORTING tab -->
+      <div id="queue-tab-reporting" style="display:none;">
+
+        <!-- Queue selector + time range -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span style="font-size:12px; color:var(--text-dim); margin-right:4px;">Showing:</span>
+            <span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--primary-bg); border:1px solid rgba(59,130,246,.3); border-radius:100px; font-size:12px; color:var(--primary);">Network Ops <span style="cursor:pointer; opacity:.6;">&times;</span></span>
+            <span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--primary-bg); border:1px solid rgba(59,130,246,.3); border-radius:100px; font-size:12px; color:var(--primary);">Desktop Support <span style="cursor:pointer; opacity:.6;">&times;</span></span>
+            <span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--primary-bg); border:1px solid rgba(59,130,246,.3); border-radius:100px; font-size:12px; color:var(--primary);">General IT <span style="cursor:pointer; opacity:.6;">&times;</span></span>
+            <button class="btn btn-sm btn-ghost" style="padding:4px 8px; font-size:11px;">+ Add queue</button>
+            <span style="color:var(--border-light); margin:0 4px;">|</span>
+            <button class="btn btn-sm btn-ghost" style="padding:4px 8px; font-size:11px;">All queues</button>
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button class="toggle-btn active">7d</button>
+            <button class="toggle-btn">30d</button>
+            <button class="toggle-btn">90d</button>
+            <button class="toggle-btn">Custom</button>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+
+          <!-- Chart A: Created vs Resolved -->
+          <div class="card" style="padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="font-size:13px; font-weight:600;">Created vs Resolved</div>
+              <div style="display:flex; gap:12px; font-size:11px; color:var(--text-dim);">
+                <span><span style="display:inline-block; width:8px; height:8px; border-radius:2px; background:var(--primary); margin-right:4px;"></span>Created</span>
+                <span><span style="display:inline-block; width:8px; height:8px; border-radius:2px; background:var(--success); margin-right:4px;"></span>Resolved</span>
+              </div>
+            </div>
+            <!-- Bar chart mockup -->
+            <div style="display:flex; align-items:flex-end; gap:6px; height:120px; padding-bottom:20px; position:relative;">
+              <!-- Y axis labels -->
+              <div style="position:absolute; left:0; top:0; bottom:20px; width:24px; display:flex; flex-direction:column; justify-content:space-between; font-size:9px; color:var(--text-dim); text-align:right;">
+                <span>15</span><span>10</span><span>5</span><span>0</span>
+              </div>
+              <div style="flex:1; display:flex; align-items:flex-end; justify-content:space-around; margin-left:28px;">
+                <div style="display:flex; gap:2px; align-items:flex-end;"><div style="width:14px; height:80px; background:var(--primary); border-radius:2px 2px 0 0; opacity:.8;"></div><div style="width:14px; height:50px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div></div>
+                <div style="display:flex; gap:2px; align-items:flex-end;"><div style="width:14px; height:60px; background:var(--primary); border-radius:2px 2px 0 0; opacity:.8;"></div><div style="width:14px; height:55px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div></div>
+                <div style="display:flex; gap:2px; align-items:flex-end;"><div style="width:14px; height:45px; background:var(--primary); border-radius:2px 2px 0 0; opacity:.8;"></div><div style="width:14px; height:40px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div></div>
+                <div style="display:flex; gap:2px; align-items:flex-end;"><div style="width:14px; height:90px; background:var(--primary); border-radius:2px 2px 0 0; opacity:.8;"></div><div style="width:14px; height:60px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div></div>
+                <div style="display:flex; gap:2px; align-items:flex-end;"><div style="width:14px; height:70px; background:var(--primary); border-radius:2px 2px 0 0; opacity:.8;"></div><div style="width:14px; height:65px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div></div>
+                <div style="display:flex; gap:2px; align-items:flex-end;"><div style="width:14px; height:100px; background:var(--primary); border-radius:2px 2px 0 0; opacity:.8;"></div><div style="width:14px; height:40px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div></div>
+                <div style="display:flex; gap:2px; align-items:flex-end;"><div style="width:14px; height:95px; background:var(--primary); border-radius:2px 2px 0 0; opacity:.8;"></div><div style="width:14px; height:30px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div></div>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-around; margin-left:28px; font-size:9px; color:var(--text-dim);">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+            <div style="text-align:right; margin-top:8px; font-size:12px;">
+              Net: <span style="font-weight:600; color:var(--destructive);">+16</span> this period
+            </div>
+          </div>
+
+          <!-- Chart B: Ticket Age Distribution -->
+          <div class="card" style="padding:16px;">
+            <div style="font-size:13px; font-weight:600; margin-bottom:12px;">Open Ticket Age Distribution</div>
+            <!-- Histogram mockup -->
+            <div style="display:flex; align-items:flex-end; gap:6px; height:120px; padding-bottom:20px; position:relative;">
+              <div style="position:absolute; left:0; top:0; bottom:20px; width:24px; display:flex; flex-direction:column; justify-content:space-between; font-size:9px; color:var(--text-dim); text-align:right;">
+                <span>25</span><span>15</span><span>5</span><span>0</span>
+              </div>
+              <div style="flex:1; display:flex; align-items:flex-end; justify-content:space-around; margin-left:28px;">
+                <div style="width:36px; height:100px; background:var(--success); border-radius:2px 2px 0 0; opacity:.8;"></div>
+                <div style="width:36px; height:72px; background:var(--success); border-radius:2px 2px 0 0; opacity:.7;"></div>
+                <div style="width:36px; height:56px; background:var(--warning); border-radius:2px 2px 0 0; opacity:.8;"></div>
+                <div style="width:36px; height:36px; background:var(--warning); border-radius:2px 2px 0 0; opacity:.8;"></div>
+                <div style="width:36px; height:20px; background:var(--destructive); border-radius:2px 2px 0 0; opacity:.8;"></div>
+                <div style="width:36px; height:32px; background:var(--destructive); border-radius:2px 2px 0 0; opacity:.9;"></div>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-around; margin-left:28px; font-size:9px; color:var(--text-dim);">
+              <span>&lt; 1h</span><span>1-4h</span><span>4-24h</span><span>1-3d</span><span>3-7d</span><span>7d+</span>
+            </div>
+            <div style="text-align:right; margin-top:8px; font-size:12px; color:var(--destructive);">
+              <span style="font-weight:600;">8</span> tickets aging past 7 days
+            </div>
+          </div>
+        </div>
+
+        <!-- Export section -->
+        <div class="card" style="padding:20px;">
+          <div style="font-size:15px; font-weight:600; margin-bottom:4px;">Export Ticket Data</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Download a CSV of ticket data for the selected queues.</div>
+
+          <!-- Date range -->
+          <div style="display:flex; gap:16px; margin-bottom:16px; align-items:center;">
+            <div>
+              <label style="font-size:12px; color:var(--text-dim); display:block; margin-bottom:4px;">Created after</label>
+              <input class="form-input" type="date" value="2026-04-07" style="width:160px; font-size:12px;">
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-dim); display:block; margin-bottom:4px;">Created before</label>
+              <input class="form-input" type="date" value="2026-04-14" style="width:160px; font-size:12px;">
+            </div>
+            <div style="font-size:12px; color:var(--text-dim); margin-top:16px;">
+              Queues: using current selection (3 queues)
+            </div>
+          </div>
+
+          <!-- Field checkboxes -->
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">Fields included</div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px 24px; margin-bottom:16px; font-size:12px;">
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Ticket ID</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Title</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Description</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Current State</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Priority</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Queue Name</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Requester</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Responder</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Created At</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Closed At</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> First Response Time</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Resolution Time</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> Category</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> Type</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> Source Ref</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> Last Activity</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> Summary</label>
+          </div>
+
+          <!-- SLA fields -->
+          <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">SLA Fields</div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px 24px; margin-bottom:20px; font-size:12px;">
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> SLA Breach Count</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer;"><input type="checkbox" checked style="accent-color:var(--primary);"> Total SLA Wait</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> Total SLA Breach Time</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> SLA Bucket</label>
+            <label style="display:flex; align-items:center; gap:6px; color:var(--text-dim); cursor:pointer;"><input type="checkbox" style="accent-color:var(--primary);"> SLA Ticking Since</label>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary">Download CSV</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════
+       PAGE 2: DETAIL — Overview
+       "How is this queue doing right now?"
+       No presence/SLA — only data we can compute today
+       ════════════════════════════════════════════════════ -->
+  <div class="page" id="page-overview">
+    <div class="page-content">
+      <div class="breadcrumb" onclick="showPage('list')">&larr; Queues</div>
+      <div class="header-row">
+        <div class="header-left">
+          <div class="page-title">Network Operations <span class="badge badge-count" style="font-size:13px; vertical-align:middle; margin-left:6px; cursor:pointer;" title="View all 58 open tickets">58</span></div>
+          <div class="page-subtitle">Infrastructure incidents, connectivity issues</div>
+        </div>
+      </div>
+
+      <!-- Tabs: Overview / Team / Settings -->
+      <div class="tab-bar">
+        <div class="tab-item active">Overview</div>
+        <div class="tab-item" onclick="showPage('team')">Team</div>
+
+        <div class="tab-item" onclick="showPage('settings')">Settings</div>
+      </div>
+
+      <div class="detail-columns">
+        <div class="detail-main">
+
+          <!-- Unified workload table with unassigned header -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-title">Workload</div>
+              <button class="btn btn-sm btn-ghost" onclick="showPage('team')">Manage team &rarr;</button>
+            </div>
+            <div class="card" style="padding:0; overflow:hidden;">
+
+              <!-- Unassigned header row — critical threshold (32 > 25) -->
+              <div class="unassigned-row critical" title="View unassigned tickets">
+                <div>
+                  <div class="unassigned-label">32 Unassigned</div>
+                  <div class="unassigned-sub">oldest waiting: 2h 14m</div>
+                </div>
+                <div></div>
+                <div></div>
+                <div class="sla-cell sla-breach" style="opacity:1;">18m</div>
+                <div style="font-size:12px; font-weight:500; color:inherit; text-align:right;">View tickets &rarr;</div>
+              </div>
+
+              <div class="op-table-header" style="cursor:pointer; user-select:none;">
+                <span>Operator <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
+                <span style="text-align:center;">Working <span class="badge badge-count" style="cursor:pointer; font-size:10px; vertical-align:middle;" title="View all 14 working tickets">14</span></span>
+                <span style="text-align:center; color:var(--info);">On Hold <span class="badge" style="background:var(--info-bg); color:var(--info); cursor:pointer; font-size:10px; vertical-align:middle;" title="View all 5 on-hold tickets">5</span></span>
+                <span style="text-align:center;">Next SLA</span>
+                <span style="border-left:1px solid var(--border); padding-left:8px;">All Queues <span class="badge badge-count" style="font-size:10px; vertical-align:middle;" title="28 assigned / 47 total capacity across operators">28/47</span></span>
+              </div>
+              <!-- Jordan: 5 working + 4 on hold; avg SLA 2h 14m (yellow) -->
+              <div class="op-row">
+                <div class="op-info clickable" title="View Jordan's tickets in this queue">
+                  <div class="op-avatar avatar-blue">JC</div>
+                  <div><div class="op-name">Jordan Chen</div><div class="op-role">Lead</div></div>
+                </div>
+                <div class="op-tickets clickable" title="Jordan's working tickets in this queue">5</div>
+                <div class="op-tickets clickable" style="color:var(--info)" title="Jordan's on-hold tickets in this queue">4</div>
+                <div class="sla-cell sla-warn" title="Time until Jordan's next SLA deadline">2h 14m</div>
+                <div class="capacity-bar clickable" style="border-left:1px solid var(--border); padding-left:8px;" title="View all Jordan's tickets across queues">
+                  <div class="capacity-track"><div class="capacity-fill high" style="width:80%"></div></div>
+                  <div class="capacity-label">12/15</div>
+                </div>
+              </div>
+              <!-- Morgan: 7 working, 0 on hold; avg SLA comfortable -->
+              <div class="op-row">
+                <div class="op-info clickable" title="View Morgan's tickets in this queue">
+                  <div class="op-avatar avatar-green">MP</div>
+                  <div><div class="op-name">Morgan Park</div><div class="op-role">Member</div></div>
+                </div>
+                <div class="op-tickets clickable" title="Morgan's working tickets in this queue">7</div>
+                <div class="op-tickets clickable" style="color:var(--text-dim)" title="Morgan's on-hold tickets in this queue">0</div>
+                <div class="sla-cell sla-ok" title="Time until Morgan's next SLA deadline">&lt; 1d</div>
+                <div class="capacity-bar clickable" style="border-left:1px solid var(--border); padding-left:8px;" title="View all Morgan's tickets across queues">
+                  <div class="capacity-track"><div class="capacity-fill medium" style="width:58%"></div></div>
+                  <div class="capacity-label">7/12</div>
+                </div>
+              </div>
+              <!-- Alex: unavailable, SLA will breach during OOO — pulsing -->
+              <div class="op-row" style="opacity:.55;">
+                <div class="op-info clickable" title="View Alex's tickets in this queue">
+                  <div class="op-avatar avatar-purple">AK</div>
+                  <div><div class="op-name">Alex Kim <span style="font-size:10px; font-weight:400; color:var(--warning); margin-left:4px;">unavailable</span></div><div class="op-role">Member</div></div>
+                </div>
+                <div class="op-tickets clickable" title="Alex's working tickets in this queue">2</div>
+                <div class="op-tickets clickable" style="color:var(--info)" title="Alex's on-hold tickets in this queue">1</div>
+                <div class="sla-cell sla-breach" style="opacity:1;" title="Next SLA expires while Alex is unavailable — tickets need reassignment">&#9888; 6h 30m</div>
+                <div class="capacity-bar clickable" style="border-left:1px solid var(--border); padding-left:8px;" title="View all Alex's tickets across queues">
+                  <div class="capacity-track"><div class="capacity-fill high" style="width:90%"></div></div>
+                  <div class="capacity-label">9/10</div>
+                </div>
+              </div>
+              <!-- Taylor: 0 tickets, no SLA -->
+              <div class="op-row">
+                <div class="op-info clickable" title="View Taylor's tickets in this queue">
+                  <div class="op-avatar avatar-orange">TR</div>
+                  <div><div class="op-name">Taylor Reeves</div><div class="op-role">Member</div></div>
+                </div>
+                <div class="op-tickets clickable" style="color:var(--text-dim)" title="Taylor's working tickets in this queue">0</div>
+                <div class="op-tickets clickable" style="color:var(--text-dim)" title="Taylor's on-hold tickets in this queue">0</div>
+                <div class="sla-cell" style="color:var(--text-dim);">&mdash;</div>
+                <div class="capacity-bar clickable" style="border-left:1px solid var(--border); padding-left:8px;" title="View all Taylor's tickets across queues">
+                  <div class="capacity-track"><div class="capacity-fill low" style="width:0%"></div></div>
+                  <div class="capacity-label">0/10</div>
+                </div>
+              </div>
+
+              <!-- Collapsible guest assignees -->
+              <div class="guest-toggle" onclick="toggleGuests()" style="display:grid; grid-template-columns: 1fr 110px 110px 100px 160px; gap:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="guest-toggle-arrow" id="guest-arrow">&#9654;</span>
+                  <span><strong>3 other assignees</strong> &middot; 6 tickets</span>
+                </div>
+                <div></div>
+                <div></div>
+                <div class="sla-cell sla-critical">45m</div>
+                <div></div>
+              </div>
+              <div class="guest-rows collapsed" id="guest-rows">
+                <div class="guest-row">
+                  <div class="op-info">
+                    <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">ST</div>
+                    <div><div class="op-name">Sam Torres</div><div class="guest-label">not an operator</div></div>
+                  </div>
+                  <div class="op-tickets">3</div>
+                  <div class="op-tickets" style="color:var(--text-dim)">0</div>
+                  <div class="sla-cell sla-ok">&lt; 1d</div>
+                  <div style="border-left:1px solid var(--border); padding-left:8px; font-size:11px; color:var(--text-dim);">&mdash;</div>
+                </div>
+                <div class="guest-row">
+                  <div class="op-info">
+                    <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">DW</div>
+                    <div><div class="op-name">Dana Wright</div><div class="guest-label">not an operator</div></div>
+                  </div>
+                  <div class="op-tickets">2</div>
+                  <div class="op-tickets" style="color:var(--info)">1</div>
+                  <div class="sla-cell sla-critical">45m</div>
+                  <div style="border-left:1px solid var(--border); padding-left:8px; font-size:11px; color:var(--text-dim);">&mdash;</div>
+                </div>
+                <div class="guest-row">
+                  <div class="op-info">
+                    <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">RF</div>
+                    <div><div class="op-name">Riley Fox</div><div class="guest-label">not an operator</div></div>
+                  </div>
+                  <div class="op-tickets">1</div>
+                  <div class="op-tickets" style="color:var(--text-dim)">0</div>
+                  <div class="sla-cell sla-ok">&lt; 1d</div>
+                  <div style="border-left:1px solid var(--border); padding-left:8px; font-size:11px; color:var(--text-dim);">&mdash;</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="detail-sidebar">
+          <!-- TODO: UX review — this section could become queue-specific docs/runbook links
+               e.g. "How to handle P1 network incidents", links to knowledge base articles.
+               Placeholder for now. -->
+          <div class="card side-card" style="border-style:dashed;">
+            <div class="side-card-title">Resources</div>
+            <div style="font-size:12px; color:var(--text-dim); padding:8px 0;">Future: queue-specific docs, runbooks, knowledge base links</div>
+          </div>
+
+          <div class="card side-card">
+            <div class="side-card-title">Configuration</div>
+            <div class="side-item">
+              <span class="side-item-label">Assignment</span>
+              <span class="side-item-value">Load-balanced</span>
+            </div>
+            <div class="side-item">
+              <span class="side-item-label">Business hours</span>
+              <span class="side-item-value">Mon&ndash;Fri, 8a&ndash;6p</span>
+            </div>
+            <div class="side-item">
+              <span class="side-item-label">Timezone</span>
+              <span class="side-item-value">US/Eastern</span>
+            </div>
+          </div>
+
+          <div class="card side-card">
+            <div class="side-card-title">Priority Breakdown</div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                <span style="color:var(--text-muted);">P1 &mdash; Critical</span>
+                <span style="font-weight:500;">5 open</span>
+              </div>
+              <div style="height:4px; background:var(--bg-hover); border-radius:2px; overflow:hidden;">
+                <div style="width:10%; height:100%; background:var(--destructive); border-radius:2px;"></div>
+              </div>
+            </div>
+            <div style="margin-bottom:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                <span style="color:var(--text-muted);">P2 &mdash; High</span>
+                <span style="font-weight:500;">20 open</span>
+              </div>
+              <div style="height:4px; background:var(--bg-hover); border-radius:2px; overflow:hidden;">
+                <div style="width:40%; height:100%; background:var(--warning); border-radius:2px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                <span style="color:var(--text-muted);">P3 &mdash; Normal</span>
+                <span style="font-weight:500;">25 open</span>
+              </div>
+              <div style="height:4px; background:var(--bg-hover); border-radius:2px; overflow:hidden;">
+                <div style="width:50%; height:100%; background:var(--primary); border-radius:2px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════
+       PAGE 3: DETAIL — Team
+       Management actions: add/remove operators, change roles
+       Expanded view with per-operator performance stats
+       ════════════════════════════════════════════════════ -->
+  <div class="page" id="page-team">
+    <div class="page-content">
+      <div class="breadcrumb" onclick="showPage('list')">&larr; Queues</div>
+      <div class="header-row">
+        <div class="header-left">
+          <div class="page-title">Network Operations</div>
+          <div class="page-subtitle">Infrastructure incidents, connectivity issues</div>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-primary">+ Add operator</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showPage('overview')">Overview</div>
+        <div class="tab-item active">Team</div>
+
+        <div class="tab-item" onclick="showPage('settings')">Settings</div>
+      </div>
+
+      <!-- Roster table -->
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div class="team-table-header">
+          <span>Operator <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
+          <span>Role</span>
+          <span>Schedule / Availability</span>
+          <span></span>
+        </div>
+
+        <!-- Jordan Chen — available -->
+        <div class="team-row">
+          <div class="op-info clickable" title="View Jordan's tickets in this queue">
+            <div class="team-avatar avatar-blue">JC</div>
+            <div>
+              <div class="op-name">Jordan Chen</div>
+              <div style="font-size:10px; color:var(--text-dim);">Added Apr 2, 2026</div>
+            </div>
+          </div>
+          <div><select class="role-select"><option selected>Lead</option><option>Member</option></select></div>
+          <div>
+            <div class="schedule-text">Mon&ndash;Fri 8a&ndash;6p ET</div>
+            <div class="availability-ok">Available</div>
+          </div>
+          <button class="btn-remove" title="Remove from queue">&times; Remove</button>
+        </div>
+
+        <!-- Morgan Park — available, different timezone -->
+        <div class="team-row">
+          <div class="op-info clickable" title="View Morgan's tickets in this queue">
+            <div class="team-avatar avatar-green">MP</div>
+            <div>
+              <div class="op-name">Morgan Park</div>
+              <div style="font-size:10px; color:var(--text-dim);">Added Mar 15, 2026</div>
+            </div>
+          </div>
+          <div><select class="role-select"><option>Lead</option><option selected>Member</option></select></div>
+          <div>
+            <div class="schedule-text">Mon&ndash;Fri 9a&ndash;5p PT</div>
+            <div class="availability-ok">Available</div>
+          </div>
+          <button class="btn-remove" title="Remove from queue">&times; Remove</button>
+        </div>
+
+        <!-- Alex Kim — unavailable -->
+        <div class="team-row" style="background: var(--warning-bg);">
+          <div class="op-info clickable" title="View Alex's tickets in this queue">
+            <div class="team-avatar avatar-purple">AK</div>
+            <div>
+              <div class="op-name">Alex Kim</div>
+              <div style="font-size:10px; color:var(--text-dim);">Added Mar 15, 2026</div>
+            </div>
+          </div>
+          <div><select class="role-select"><option>Lead</option><option selected>Member</option></select></div>
+          <div>
+            <div class="schedule-text">Mon&ndash;Fri 8a&ndash;6p ET</div>
+            <div class="availability-warn">&#9888; Out until Apr 18</div>
+            <div class="availability-reason">"Conference travel"</div>
+          </div>
+          <button class="btn-remove" title="Remove from queue">&times; Remove</button>
+        </div>
+
+        <!-- Taylor Reeves — available, different schedule -->
+        <div class="team-row">
+          <div class="op-info clickable" title="View Taylor's tickets in this queue">
+            <div class="team-avatar avatar-orange">TR</div>
+            <div>
+              <div class="op-name">Taylor Reeves</div>
+              <div style="font-size:10px; color:var(--text-dim);">Added Feb 28, 2026</div>
+            </div>
+          </div>
+          <div><select class="role-select"><option>Lead</option><option selected>Member</option></select></div>
+          <div>
+            <div class="schedule-text">Mon&ndash;Sat 7a&ndash;3p CT</div>
+            <div class="availability-ok">Available</div>
+          </div>
+          <button class="btn-remove" title="Remove from queue">&times; Remove</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════════════
+       PAGE 4: DETAIL — Settings
+       Tab-only access (no separate button)
+       Clean two-column: nav + form
+       ════════════════════════════════════════════════════ -->
+  <div class="page" id="page-settings">
+    <div class="page-content">
+      <div class="breadcrumb" onclick="showPage('list')">&larr; Queues</div>
+      <div class="header-row">
+        <div class="header-left">
+          <div class="page-title">Network Operations</div>
+          <div class="page-subtitle">Infrastructure incidents, connectivity issues</div>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item" onclick="showPage('overview')">Overview</div>
+        <div class="tab-item" onclick="showPage('team')">Team</div>
+
+        <div class="tab-item active">Settings</div>
+      </div>
+
+      <div class="settings-layout">
+        <div class="settings-nav-col">
+          <div class="settings-nav-item active" onclick="showSettingsSection('general')">General</div>
+          <div class="settings-nav-item" onclick="showSettingsSection('assignment')">Assignment</div>
+          <div class="settings-nav-item" onclick="showSettingsSection('hours')">Business Hours</div>
+          <div class="settings-nav-item disabled">Automation <span class="soon-badge">Soon</span></div>
+          <div class="settings-nav-sep"></div>
+          <div class="settings-nav-item danger" onclick="showSettingsSection('danger')">Danger Zone</div>
+        </div>
+
+        <div class="settings-content-col">
+
+          <!-- General -->
+          <div id="settings-general">
+            <div class="settings-section-title">General</div>
+            <div class="settings-section-desc">Basic queue identity and description.</div>
+            <div class="form-group">
+              <label class="form-label">Queue name</label>
+              <input class="form-input" type="text" value="Network Operations">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-textarea">Infrastructure incidents, connectivity issues</textarea>
+              <div class="form-hint">Visible to operators when viewing this queue.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timezone</label>
+              <select class="form-input form-select">
+                <option selected>US/Eastern (EDT, UTC-4)</option>
+                <option>US/Pacific</option>
+                <option>UTC</option>
+              </select>
+              <div class="form-hint">Used for business hours and reporting calculations.</div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+              <button class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+
+          <!-- Assignment (hidden by default) -->
+          <div id="settings-assignment" style="display:none;">
+            <div class="settings-section-title">Assignment</div>
+            <div class="settings-section-desc">How tickets are distributed to operators in this queue.</div>
+            <div class="form-group">
+              <label class="form-label">Assignment method</label>
+              <select class="form-input form-select">
+                <option>Manual pickup</option>
+                <option>Round-robin</option>
+                <option selected>Load-balanced</option>
+              </select>
+              <div class="form-hint">Load-balanced assigns to the operator with the fewest active tickets.</div>
+            </div>
+            <div class="form-group" style="padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm);">
+              <div style="font-size:12px; color:var(--text-dim);">Operator capacity limits are configured per-operator in their profile, not per-queue.</div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+              <button class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+
+          <!-- Business Hours (hidden by default) -->
+          <div id="settings-hours" style="display:none;">
+            <div class="settings-section-title">Business Hours</div>
+            <div class="settings-section-desc">Define when this queue is operational. Affects reporting calculations.</div>
+            <div class="form-group">
+              <div class="bh-grid">
+                <div class="bh-row"><span class="bh-day">Mon</span><input class="bh-input" value="08:00"><span class="bh-dash">&ndash;</span><input class="bh-input" value="18:00"></div>
+                <div class="bh-row"><span class="bh-day">Tue</span><input class="bh-input" value="08:00"><span class="bh-dash">&ndash;</span><input class="bh-input" value="18:00"></div>
+                <div class="bh-row"><span class="bh-day">Wed</span><input class="bh-input" value="08:00"><span class="bh-dash">&ndash;</span><input class="bh-input" value="18:00"></div>
+                <div class="bh-row"><span class="bh-day">Thu</span><input class="bh-input" value="08:00"><span class="bh-dash">&ndash;</span><input class="bh-input" value="18:00"></div>
+                <div class="bh-row"><span class="bh-day">Fri</span><input class="bh-input" value="08:00"><span class="bh-dash">&ndash;</span><input class="bh-input" value="18:00"></div>
+                <div class="bh-row"><span class="bh-day" style="color:var(--text-dim)">Sat</span><span style="font-size:12px; color:var(--text-dim);">Closed</span></div>
+                <div class="bh-row"><span class="bh-day" style="color:var(--text-dim)">Sun</span><span style="font-size:12px; color:var(--text-dim);">Closed</span></div>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+              <button class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+
+          <!-- Danger Zone (hidden by default) -->
+          <div id="settings-danger" style="display:none;">
+            <div class="settings-section-title" style="color:var(--destructive);">Danger Zone</div>
+            <div class="settings-section-desc">Irreversible or high-impact actions for this queue.</div>
+            <div class="card" style="padding:16px; border-color:rgba(239,68,68,.3);">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                  <div style="font-size:14px; font-weight:500;">Archive this queue</div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Queue will be hidden from active views. Existing tickets will remain.</div>
+                </div>
+                <button class="btn" style="border-color:var(--destructive); color:var(--destructive);">Archive queue</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const navMap = { 'list': 0, 'overview': 1, 'team': 2, 'settings': 3 };
+  document.querySelectorAll('.page-nav-item')[navMap[id]].classList.add('active');
+}
+
+function showQueueTab(tab) {
+  var ids = ['my','all','routing','reporting'];
+  ids.forEach(function(id) {
+    document.getElementById('queue-tab-' + id).style.display = id === tab ? 'block' : 'none';
+  });
+  var tabs = document.querySelectorAll('#page-list .tab-item');
+  var tabMap = {'my':0, 'all':1, 'routing':2, 'reporting':3};
+  tabs.forEach(function(t,i) { t.classList.toggle('active', i === tabMap[tab]); });
+}
+
+function toggleGuests() {
+  const rows = document.getElementById('guest-rows');
+  const arrow = document.getElementById('guest-arrow');
+  if (rows.classList.contains('collapsed')) {
+    rows.classList.remove('collapsed');
+    rows.classList.add('expanded');
+    arrow.classList.add('open');
+  } else {
+    rows.classList.remove('expanded');
+    rows.classList.add('collapsed');
+    arrow.classList.remove('open');
+  }
+}
+
+function showSettingsSection(id) {
+  // Hide all settings sections
+  ['general','assignment','hours','danger'].forEach(s => {
+    const el = document.getElementById('settings-' + s);
+    if (el) el.style.display = 'none';
+  });
+  // Show selected
+  const target = document.getElementById('settings-' + id);
+  if (target) target.style.display = 'block';
+  // Update nav
+  document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+</script>
+
+</body>
+</html>
