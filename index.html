@@ -405,7 +405,7 @@
             <span style="text-align:center;">Next SLA</span>
             <span></span>
           </div>
-          <div class="queue-table-row" onclick="showPage('overview')">
+          <div class="queue-table-row" data-mine="true" onclick="showPage('overview')">
             <div class="queue-name-cell">
               <div class="health-icon critical"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg></div>
               <div><div class="queue-name">Network Operations</div><div class="queue-desc">Infrastructure incidents, connectivity</div></div>
@@ -416,7 +416,7 @@
             <div class="sla-cell sla-breach"><span class="sla-dot"></span>18m</div>
             <div class="queue-chevron">&rsaquo;</div>
           </div>
-          <div class="queue-table-row">
+          <div class="queue-table-row" data-mine="true">
             <div class="queue-name-cell">
               <div class="health-icon warning"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L1 14h14L8 1.5z"/><line x1="8" y1="6.5" x2="8" y2="9.5"/><circle cx="8" cy="12" r="0.5" fill="currentColor" stroke="none"/></svg></div>
               <div><div class="queue-name">Desktop Support</div><div class="queue-desc">Hardware, software, access requests</div></div>
@@ -460,7 +460,7 @@
             <div class="sla-cell sla-ok">&gt; 1d</div>
             <div class="queue-chevron">&rsaquo;</div>
           </div>
-          <div class="queue-table-row">
+          <div class="queue-table-row" data-mine="true">
             <div class="queue-name-cell">
               <div class="health-icon warning"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L1 14h14L8 1.5z"/><line x1="8" y1="6.5" x2="8" y2="9.5"/><circle cx="8" cy="12" r="0.5" fill="currentColor" stroke="none"/></svg></div>
               <div><div class="queue-name">General IT</div><div class="queue-desc">Catch-all for unrouted requests</div></div>
@@ -1108,10 +1108,18 @@ function showQueueTab(tab) {
 }
 
 function filterQueues(btn, filter) {
-  // Toggle active state on filter buttons
   btn.parentElement.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
-  // In a real app this would filter the table; mockup just toggles the active style
+  var rows = document.querySelectorAll('#queue-tab-queues .queue-table-row');
+  rows.forEach(function(row) {
+    if (filter === 'all') {
+      row.style.display = '';
+    } else if (filter === 'my') {
+      row.style.display = row.dataset.mine === 'true' ? '' : 'none';
+    } else if (filter === 'archived') {
+      row.style.display = 'none'; // no archived queues in mockup
+    }
+  });
 }
 
 function showSettingsSection(id) {
