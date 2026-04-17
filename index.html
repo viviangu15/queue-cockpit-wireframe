@@ -385,22 +385,23 @@
         </div>
       </div>
 
-      <!-- Primary tabs with inline segment control -->
-      <div class="tab-bar" style="align-items:center;">
+      <!-- Primary tabs -->
+      <div class="tab-bar">
         <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
-        <div class="segment-control" id="queue-filter-control" style="margin-left:8px; margin-bottom:-2px;">
-          <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
-          <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
-          <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
-        </div>
-        <div class="tab-item" onclick="showQueueTab('routing')" style="margin-left:16px;">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
+        <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
         <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
       </div>
 
       <!-- QUEUES (unified — filtered by pills) -->
       <div id="queue-tab-queues">
-          <div class="queue-table-header">
-            <span>Queue</span>
+          <div class="queue-table-header" style="align-items:center;">
+            <span style="display:flex; align-items:center; gap:12px;">Queue
+              <span class="segment-control" style="font-size:12px; text-transform:none; letter-spacing:0; font-family:'DM Sans',sans-serif;">
+                <span class="segment-item active" onclick="event.stopPropagation(); filterQueues(this,'all')">All</span>
+                <span class="segment-item" onclick="event.stopPropagation(); filterQueues(this,'my')">My Queues</span>
+                <span class="segment-item" onclick="event.stopPropagation(); filterQueues(this,'archived')">Archived</span>
+              </span>
+            </span>
             <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); border-color:rgba(245,158,11,.2); font-size:10px; vertical-align:middle;">83</span></span>
             <span style="text-align:center;">Open</span>
             <span style="text-align:center;">Operators</span>
