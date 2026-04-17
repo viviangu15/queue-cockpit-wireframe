@@ -131,8 +131,13 @@
   .health-icon.warning { color: var(--warning); }
   .health-icon.critical { color: var(--destructive); }
 
-  /* Filter buttons row */
-  .filter-row { display: flex; gap: 6px; margin-bottom: 20px; }
+  /* Segmented control */
+  .segment-control { display: inline-flex; background: var(--bg-raised); border: 1px solid var(--border-light);
+    border-radius: var(--radius); padding: 3px; gap: 2px; }
+  .segment-item { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    color: var(--text-muted); cursor: pointer; transition: all .15s; user-select: none; white-space: nowrap; }
+  .segment-item:hover { color: var(--text); }
+  .segment-item.active { background: var(--bg-card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 
   /* Blinking SLA dot */
   .sla-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--destructive);
@@ -382,10 +387,10 @@
 
       <!-- Filter buttons + secondary tabs -->
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-        <div class="filter-row" style="margin-bottom:0;">
-          <button class="toggle-btn active" onclick="filterQueues(this,'all')">All</button>
-          <button class="toggle-btn" onclick="filterQueues(this,'my')">My Queues</button>
-          <button class="toggle-btn" onclick="filterQueues(this,'archived')">Archived</button>
+        <div class="segment-control">
+          <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
+          <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
+          <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
         </div>
         <div class="tab-bar" style="border-bottom:none; margin-bottom:0; gap:0;">
           <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
@@ -1108,7 +1113,7 @@ function showQueueTab(tab) {
 }
 
 function filterQueues(btn, filter) {
-  btn.parentElement.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.parentElement.querySelectorAll('.segment-item').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   var rows = document.querySelectorAll('#queue-tab-queues .queue-table-row');
   rows.forEach(function(row) {
