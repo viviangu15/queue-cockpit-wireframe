@@ -153,7 +153,7 @@
   .queue-table-header > span:not(:first-child):not(:last-child) { justify-content: center; }
   .queue-table-row { display: grid; grid-template-columns: 1fr 140px 90px 100px 110px 32px; gap: 12px; align-items: center;
     padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
-  .queue-table-row:hover { background: var(--bg-hover); }
+  .queue-table-row:hover { background: var(--bg-glass); }
   .queue-table-row:last-child { border-bottom: none; }
   .queue-name-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .queue-name { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -394,9 +394,8 @@
 
       <!-- QUEUES (unified — filtered by pills) -->
       <div id="queue-tab-queues">
-        <div class="card" style="padding:0; overflow:hidden;">
-          <div style="padding:12px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
-            <div class="segment-control" style="border:none; background:none; padding:0;">
+          <div style="padding:0 0 16px; display:flex; align-items:center;">
+            <div class="segment-control">
               <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
               <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
               <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
@@ -476,7 +475,6 @@
             <div class="sla-cell sla-warn">3h 45m</div>
             <div class="queue-chevron">&rsaquo;</div>
           </div>
-        </div>
       </div>
 
       <!-- ROUTING tab stub -->
