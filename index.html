@@ -288,8 +288,8 @@
   .team-table-header { display: grid; grid-template-columns: 1fr 90px 1fr 70px; gap: 12px; padding: 10px 16px;
     border-bottom: 1px solid var(--border); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: var(--text-dim);
     text-transform: uppercase; letter-spacing: .05em; cursor: pointer; user-select: none; }
-  .team-row { display: grid; grid-template-columns: 1fr 90px 1fr 70px; gap: 12px; align-items: center;
-    padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .team-row { display: grid; grid-template-columns: 1fr 90px 1fr 70px; gap: 16px; align-items: center;
+    padding: 16px 20px; border-bottom: 1px solid var(--border); }
   .team-row:last-child { border-bottom: none; }
   .team-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex;
     align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
@@ -764,6 +764,15 @@
               <span style="font-size:13px; font-weight:500;">Mon&ndash;Fri, 8a&ndash;6p</span>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid var(--border);">
+              <span style="font-size:13px; color:var(--text-muted);">Timezone</span>
+              <select class="queue-assign" style="width:auto; padding:5px 28px 5px 10px; font-size:13px;">
+                <option selected>US/Eastern (EDT)</option>
+                <option>US/Pacific (PDT)</option>
+                <option>US/Central (CDT)</option>
+                <option>UTC</option>
+              </select>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid var(--border);">
               <span style="font-size:13px; color:var(--text-muted);">Lead</span>
               <span style="font-size:13px; font-weight:500;">Jordan Chen</span>
             </div>
@@ -810,7 +819,7 @@
           <div class="section-title">Operators</div>
         </div>
         <div class="card" style="padding:0; overflow:hidden;">
-          <div class="team-table-header" style="grid-template-columns: 1fr 90px 80px 80px 120px 1fr 70px;">
+          <div class="team-table-header" style="grid-template-columns: 1fr 100px 90px 90px 150px 1fr 80px;">
             <span>Operator <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
             <span>Role</span>
             <span style="text-align:center;">Working</span>
@@ -820,7 +829,7 @@
             <span></span>
           </div>
 
-          <div class="team-row" style="grid-template-columns: 1fr 90px 80px 80px 120px 1fr 70px;">
+          <div class="team-row" style="grid-template-columns: 1fr 100px 90px 90px 150px 1fr 80px;">
             <div class="op-info clickable" title="View Jordan's tickets">
               <div class="team-avatar avatar-blue">JC</div>
               <div><div class="op-name">Jordan Chen</div><div style="font-size:10px; color:var(--text-dim);">Mon&ndash;Fri 8a&ndash;6p ET</div></div>
@@ -836,7 +845,7 @@
             <button class="btn-remove" title="Remove from queue">&times; Remove</button>
           </div>
 
-          <div class="team-row" style="grid-template-columns: 1fr 90px 80px 80px 120px 1fr 70px;">
+          <div class="team-row" style="grid-template-columns: 1fr 100px 90px 90px 150px 1fr 80px;">
             <div class="op-info clickable" title="View Morgan's tickets">
               <div class="team-avatar avatar-green">MP</div>
               <div><div class="op-name">Morgan Park</div><div style="font-size:10px; color:var(--text-dim);">Mon&ndash;Fri 9a&ndash;5p PT</div></div>
@@ -852,7 +861,7 @@
             <button class="btn-remove" title="Remove from queue">&times; Remove</button>
           </div>
 
-          <div class="team-row" style="grid-template-columns: 1fr 90px 80px 80px 120px 1fr 70px; background: var(--warning-bg);">
+          <div class="team-row" style="grid-template-columns: 1fr 100px 90px 90px 150px 1fr 80px; background: var(--warning-bg);">
             <div class="op-info clickable" title="View Alex's tickets">
               <div class="team-avatar avatar-purple">AK</div>
               <div><div class="op-name">Alex Kim</div><div style="font-size:10px; color:var(--text-dim);">Mon&ndash;Fri 8a&ndash;6p ET</div></div>
@@ -871,7 +880,7 @@
             <button class="btn-remove" title="Remove from queue">&times; Remove</button>
           </div>
 
-          <div class="team-row" style="grid-template-columns: 1fr 90px 80px 80px 120px 1fr 70px;">
+          <div class="team-row" style="grid-template-columns: 1fr 100px 90px 90px 150px 1fr 80px;">
             <div class="op-info clickable" title="View Taylor's tickets">
               <div class="team-avatar avatar-orange">TR</div>
               <div><div class="op-name">Taylor Reeves</div><div style="font-size:10px; color:var(--text-dim);">Mon&ndash;Sat 7a&ndash;3p CT</div></div>
