@@ -83,8 +83,9 @@
   .badge-role { background: var(--purple-bg); color: var(--purple); border-color: rgba(167,139,250,0.2); }
   .badge-default { background: var(--bg-glass); color: var(--text-dim); border-color: var(--border-light); }
 
-  .card { background: transparent; border: 1px solid var(--border); border-radius: var(--radius-lg); transition: background .15s; }
-  .card:hover { background: var(--bg-glass); }
+  .card { background: transparent; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+  .card.interactive { cursor: pointer; transition: background .15s; }
+  .card.interactive:hover { background: var(--bg-glass); }
   .card-hover { cursor: pointer; transition: all .15s; }
   .card-hover:hover { border-color: var(--border-light); background: rgba(255,255,255,0.05); }
 
@@ -681,7 +682,7 @@
 
       <!-- Stat cards -->
       <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
-        <div class="card" style="padding:20px; cursor:pointer;" title="View unassigned tickets">
+        <div class="card interactive" style="padding:20px;" title="View unassigned tickets">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <div class="stat-label">Unassigned</div>
             <div style="font-size:11px; color:var(--text-dim);">View &rarr;</div>
