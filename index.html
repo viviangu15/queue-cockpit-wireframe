@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#111114">
 <title>Queue Management — Redesign Mockup v2</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Hanken+Grotesk:wght@200;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* ── Reset & base ── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,7 +24,7 @@
     --info: #2dd4a8; --info-bg: rgba(45, 212, 168, 0.1);
     --purple: #a78bfa; --purple-bg: rgba(167, 139, 250, 0.12);
     --radius: 8px; --radius-sm: 6px; --radius-lg: 12px;
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 14px; color: var(--text); background: var(--bg);
   }
   body { display: flex; height: 100vh; overflow: hidden; }
@@ -36,7 +36,7 @@
   .sidebar-logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 6px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .sidebar-logo-icon svg { width: 16px; height: 16px; color: #fff; }
-  .sidebar-logo-text { font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 17px;
+  .sidebar-logo-text { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 17px;
     color: var(--text); letter-spacing: -0.3px; }
   .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 9px 12px;
     border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
@@ -61,7 +61,7 @@
   /* ── Shared ── */
   .breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; cursor: pointer; }
   .breadcrumb:hover { color: var(--accent); }
-  .page-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-title { font-family: 'DM Sans', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
   .page-subtitle { font-size: 15px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
   .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-top: 8px; }
   .header-left { display: flex; flex-direction: column; }
@@ -89,14 +89,14 @@
 
   .section { margin-bottom: 28px; }
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .section-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .section-title { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
   .section-title-muted { color: var(--text-muted); font-weight: 400; font-size: 13px; }
   .divider { height: 1px; background: var(--border); margin: 16px 0; }
 
   .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; }
   .stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim);
     text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; }
-  .stat-value { font-family: 'Hanken Grotesk', sans-serif; font-size: 24px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .stat-value { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
   .stat-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
   .stat-value.warning { color: var(--warning); }
   .stat-value.destructive { color: var(--destructive); }
@@ -156,7 +156,7 @@
   .queue-table-row:hover { background: var(--bg-glass); }
   .queue-table-row:last-child { border-bottom: none; }
   .queue-name-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .queue-name { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .queue-name { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .queue-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .queue-num { font-family: 'IBM Plex Mono', monospace; font-size: 15px; font-weight: 500; text-align: center; font-variant-numeric: tabular-nums; }
   .queue-chevron { color: var(--text-dim); font-size: 14px; text-align: center; }
@@ -319,7 +319,7 @@
   .settings-nav-item.danger { color: var(--destructive); }
   .settings-nav-item.danger:hover { background: var(--destructive-bg); }
   .settings-content-col { flex: 1; min-width: 0; max-width: 640px; }
-  .settings-section-title { font-family: 'Hanken Grotesk', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .settings-section-title { font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
   .settings-section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
 
   .form-group { margin-bottom: 20px; }
@@ -396,7 +396,7 @@
       <div id="queue-tab-queues">
           <div class="queue-table-header" style="align-items:center;">
             <span style="display:flex; align-items:center; gap:12px;">Queue
-              <span class="segment-control" style="font-size:12px; text-transform:none; letter-spacing:0; font-family:'DM Sans',sans-serif;">
+              <span class="segment-control" style="font-size:12px; text-transform:none; letter-spacing:0; font-family:'Inter',sans-serif;">
                 <span class="segment-item active" onclick="event.stopPropagation(); filterQueues(this,'all')">All</span>
                 <span class="segment-item" onclick="event.stopPropagation(); filterQueues(this,'my')">My Queues</span>
                 <span class="segment-item" onclick="event.stopPropagation(); filterQueues(this,'archived')">Archived</span>
