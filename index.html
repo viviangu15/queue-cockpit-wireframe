@@ -394,14 +394,16 @@
 
       <!-- QUEUES (unified — filtered by pills) -->
       <div id="queue-tab-queues">
-        <div class="segment-control" style="margin-bottom:16px;">
-          <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
-          <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
-          <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
-        </div>
         <div class="card" style="padding:0; overflow:hidden;">
+          <div style="padding:12px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+            <div class="segment-control" style="border:none; background:none; padding:0;">
+              <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
+              <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
+              <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
+            </div>
+          </div>
           <div class="queue-table-header">
-            <span>Queue <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
+            <span>Queue</span>
             <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); border-color:rgba(245,158,11,.2); font-size:10px; vertical-align:middle;">83</span></span>
             <span style="text-align:center;">Open</span>
             <span style="text-align:center;">Operators</span>
