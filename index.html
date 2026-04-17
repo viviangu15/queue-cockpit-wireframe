@@ -146,12 +146,21 @@
 
   .queue-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase;
     letter-spacing: .08em; padding: 16px 16px 8px; }
-  .queue-table-header { display: grid; grid-template-columns: 1fr 140px 90px 100px 110px 32px; gap: 12px; padding: 12px 20px;
+  /* Queue assign dropdown */
+  .queue-assign { appearance: none; padding: 6px 28px 6px 10px; background: var(--bg-raised); border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm); color: var(--text-muted); font-size: 13px; font-family: 'Inter', sans-serif;
+    cursor: pointer; transition: all .15s; width: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%23a1a1aa' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center; }
+  .queue-assign:hover { border-color: rgba(255,255,255,0.18); color: var(--text); }
+  .queue-assign:focus { border-color: var(--accent); outline: none; }
+
+  .queue-table-header { display: grid; grid-template-columns: 1fr 160px 140px 90px 100px 110px 32px; gap: 12px; padding: 12px 20px;
     border-bottom: 1px solid var(--border); font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: var(--text-dim);
     text-transform: uppercase; letter-spacing: .05em; cursor: pointer; user-select: none; white-space: nowrap; }
   .queue-table-header > span { display: inline-flex; align-items: center; gap: 6px; }
   .queue-table-header > span:not(:first-child):not(:last-child) { justify-content: center; }
-  .queue-table-row { display: grid; grid-template-columns: 1fr 140px 90px 100px 110px 32px; gap: 12px; align-items: center;
+  .queue-table-row { display: grid; grid-template-columns: 1fr 160px 140px 90px 100px 110px 32px; gap: 12px; align-items: center;
     padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
   .queue-table-row:hover { background: var(--bg-glass); }
   .queue-table-row:last-child { border-bottom: none; }
@@ -402,6 +411,7 @@
                 <span class="segment-item" onclick="event.stopPropagation(); filterQueues(this,'archived')">Archived</span>
               </span>
             </span>
+            <span>Assigned To</span>
             <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); border-color:rgba(245,158,11,.2); font-size:10px; vertical-align:middle;">83</span></span>
             <span style="text-align:center;">Open</span>
             <span style="text-align:center;">Operators</span>
@@ -413,6 +423,7 @@
               <div class="health-icon critical"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg></div>
               <div><div class="queue-name">Network Operations</div><div class="queue-desc">Infrastructure incidents, connectivity</div></div>
             </div>
+            <div onclick="event.stopPropagation()"><select class="queue-assign"><option>Jordan Chen</option><option>Morgan Park</option><option>Alex Kim</option><option>Taylor Reeves</option></select></div>
             <div class="queue-num" style="color:var(--destructive);">32</div>
             <div class="queue-num">50</div>
             <div class="queue-num">4</div>
@@ -424,6 +435,7 @@
               <div class="health-icon warning"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L1 14h14L8 1.5z"/><line x1="8" y1="6.5" x2="8" y2="9.5"/><circle cx="8" cy="12" r="0.5" fill="currentColor" stroke="none"/></svg></div>
               <div><div class="queue-name">Desktop Support</div><div class="queue-desc">Hardware, software, access requests</div></div>
             </div>
+            <div><select class="queue-assign"><option>Morgan Park</option><option>Jordan Chen</option><option>Alex Kim</option><option>Taylor Reeves</option></select></div>
             <div class="queue-num" style="color:var(--warning);">24</div>
             <div class="queue-num">55</div>
             <div class="queue-num">6</div>
@@ -435,6 +447,7 @@
               <div class="health-icon healthy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5 8l2 2 4-4"/></svg></div>
               <div><div class="queue-name">Security &amp; Compliance</div><div class="queue-desc">Vulnerability reports, access reviews</div></div>
             </div>
+            <div><select class="queue-assign"><option>Alex Kim</option><option>Jordan Chen</option><option>Morgan Park</option><option>Taylor Reeves</option></select></div>
             <div class="queue-num">5</div>
             <div class="queue-num">17</div>
             <div class="queue-num">5</div>
@@ -446,6 +459,7 @@
               <div class="health-icon healthy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5 8l2 2 4-4"/></svg></div>
               <div><div class="queue-name">Cloud Infrastructure</div><div class="queue-desc">AWS, GCP provisioning and issues</div></div>
             </div>
+            <div><select class="queue-assign"><option>Taylor Reeves</option><option>Jordan Chen</option><option>Morgan Park</option><option>Alex Kim</option></select></div>
             <div class="queue-num">8</div>
             <div class="queue-num">23</div>
             <div class="queue-num">4</div>
@@ -457,6 +471,7 @@
               <div class="health-icon healthy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5 8l2 2 4-4"/></svg></div>
               <div><div class="queue-name">Database Admin</div><div class="queue-desc">Schema changes, performance, backups</div></div>
             </div>
+            <div><select class="queue-assign"><option>Jordan Chen</option><option>Morgan Park</option><option>Alex Kim</option><option>Taylor Reeves</option></select></div>
             <div class="queue-num">2</div>
             <div class="queue-num">9</div>
             <div class="queue-num">3</div>
@@ -468,6 +483,7 @@
               <div class="health-icon warning"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L1 14h14L8 1.5z"/><line x1="8" y1="6.5" x2="8" y2="9.5"/><circle cx="8" cy="12" r="0.5" fill="currentColor" stroke="none"/></svg></div>
               <div><div class="queue-name">General IT</div><div class="queue-desc">Catch-all for unrouted requests</div></div>
             </div>
+            <div><select class="queue-assign"><option>Morgan Park</option><option>Jordan Chen</option><option>Alex Kim</option><option>Taylor Reeves</option></select></div>
             <div class="queue-num" style="color:var(--warning);">12</div>
             <div class="queue-num">21</div>
             <div class="queue-num">2</div>
