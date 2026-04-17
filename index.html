@@ -512,21 +512,21 @@
       <div id="queue-tab-reporting" style="display:none;">
 
         <!-- Queue selector + time range -->
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
-          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <span style="font-size:12px; color:var(--text-dim); margin-right:4px;">Showing:</span>
-            <span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--primary-bg); border:1px solid rgba(59,130,246,.3); border-radius:100px; font-size:12px; color:var(--primary);">Network Ops <span style="cursor:pointer; opacity:.6;">&times;</span></span>
-            <span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--primary-bg); border:1px solid rgba(59,130,246,.3); border-radius:100px; font-size:12px; color:var(--primary);">Desktop Support <span style="cursor:pointer; opacity:.6;">&times;</span></span>
-            <span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--primary-bg); border:1px solid rgba(59,130,246,.3); border-radius:100px; font-size:12px; color:var(--primary);">General IT <span style="cursor:pointer; opacity:.6;">&times;</span></span>
-            <button class="btn btn-sm btn-ghost" style="padding:4px 8px; font-size:11px;">+ Add queue</button>
-            <span style="color:var(--border-light); margin:0 4px;">|</span>
-            <button class="btn btn-sm btn-ghost" style="padding:4px 8px; font-size:11px;">All queues</button>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <select class="queue-assign" style="width:auto; padding:7px 32px 7px 12px;">
+              <option selected>3 queues selected</option>
+              <option>All queues</option>
+              <option>Network Operations</option>
+              <option>Desktop Support</option>
+              <option>General IT</option>
+            </select>
           </div>
-          <div style="display:flex; gap:4px;">
-            <button class="toggle-btn active">7d</button>
-            <button class="toggle-btn">30d</button>
-            <button class="toggle-btn">90d</button>
-            <button class="toggle-btn">Custom</button>
+          <div class="segment-control">
+            <div class="segment-item active">7d</div>
+            <div class="segment-item">30d</div>
+            <div class="segment-item">90d</div>
+            <div class="segment-item">Custom</div>
           </div>
         </div>
 
