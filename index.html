@@ -385,18 +385,16 @@
         </div>
       </div>
 
-      <!-- Primary tabs + segment control -->
-      <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:24px;">
-        <div class="tab-bar" style="border-bottom:none; margin-bottom:0;">
-          <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
-          <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
-          <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
-        </div>
-        <div class="segment-control" id="queue-filter-control" style="margin-bottom:8px;">
+      <!-- Primary tabs with inline segment control -->
+      <div class="tab-bar" style="align-items:center;">
+        <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
+        <div class="segment-control" id="queue-filter-control" style="margin-left:8px; margin-bottom:-2px;">
           <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
           <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
           <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
         </div>
+        <div class="tab-item" onclick="showQueueTab('routing')" style="margin-left:16px;">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
+        <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
       </div>
 
       <!-- QUEUES (unified — filtered by pills) -->
