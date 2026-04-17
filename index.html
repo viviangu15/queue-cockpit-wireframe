@@ -125,10 +125,19 @@
   /* ════════════════════════════════════════════════
      PAGE 1: QUEUE LIST (table layout)
      ════════════════════════════════════════════════ */
-  .health-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .health-dot.healthy { background: var(--success); box-shadow: 0 0 8px rgba(52,211,153,.35); }
-  .health-dot.warning { background: var(--warning); box-shadow: 0 0 8px rgba(245,158,11,.35); }
-  .health-dot.critical { background: var(--destructive); box-shadow: 0 0 8px rgba(248,113,113,.35); }
+  .health-icon { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .health-icon svg { width: 18px; height: 18px; }
+  .health-icon.healthy { color: var(--success); }
+  .health-icon.warning { color: var(--warning); }
+  .health-icon.critical { color: var(--destructive); }
+
+  /* Filter buttons row */
+  .filter-row { display: flex; gap: 6px; margin-bottom: 20px; }
+
+  /* Blinking SLA dot */
+  .sla-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--destructive);
+    margin-right: 5px; vertical-align: middle; animation: sla-blink 1.5s ease-in-out infinite; }
+  @keyframes sla-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 
   .queue-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase;
     letter-spacing: .08em; padding: 16px 16px 8px; }
@@ -172,7 +181,7 @@
   .sla-ok { color: var(--text-muted); }
   .sla-warn { color: var(--warning); }
   .sla-critical { color: var(--destructive); }
-  .sla-breach { color: var(--destructive); animation: urgent-pulse 2s ease-in-out infinite; }
+  .sla-breach { color: var(--destructive); }
   .op-row:last-child { border-bottom: none; }
 
   /* Guest assignee collapsible section */
@@ -367,94 +376,49 @@
           <div class="page-title">Queues <span class="badge badge-count" style="font-size:13px; vertical-align:middle; margin-left:6px;">6</span></div>
         </div>
         <div class="header-right">
-          <div style="display:flex; gap:4px;">
-            <button class="toggle-btn active">Active</button>
-            <button class="toggle-btn">Archived</button>
-          </div>
           <button class="btn btn-primary">+ Create queue</button>
         </div>
       </div>
 
-      <!-- Scope tabs -->
-      <div class="tab-bar">
-        <div class="tab-item active" onclick="showQueueTab('my')">My Queues <span class="badge badge-count" style="font-size:10px; vertical-align:middle; margin-left:4px;">3</span></div>
-        <div class="tab-item" onclick="showQueueTab('all')">All Queues <span class="badge badge-count" style="font-size:10px; vertical-align:middle; margin-left:4px;">6</span></div>
-        <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
-        <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
-      </div>
-
-      <!-- MY QUEUES tab -->
-      <div id="queue-tab-my">
-        <div class="card" style="padding:0; overflow:hidden;">
-          <div class="queue-table-header">
-            <span>Queue <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
-            <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); font-size:10px; vertical-align:middle;">68</span></span>
-            <span style="text-align:center;">Open</span>
-            <span style="text-align:center;">Operators</span>
-            <span style="text-align:center;">Next SLA</span>
-            <span></span>
-          </div>
-          <div class="queue-table-row critical-bg" onclick="showPage('overview')">
-            <div class="queue-name-cell">
-              <div class="health-dot critical"></div>
-              <div><div class="queue-name">Network Operations</div><div class="queue-desc">Infrastructure incidents, connectivity</div></div>
-            </div>
-            <div class="queue-num" style="color:var(--destructive);">32</div>
-            <div class="queue-num">50</div>
-            <div class="queue-num">4</div>
-            <div class="sla-cell sla-breach">18m</div>
-            <div class="queue-chevron">&rsaquo;</div>
-          </div>
-          <div class="queue-table-row warn-bg">
-            <div class="queue-name-cell">
-              <div class="health-dot warning"></div>
-              <div><div class="queue-name">Desktop Support</div><div class="queue-desc">Hardware, software, access requests</div></div>
-            </div>
-            <div class="queue-num" style="color:var(--warning);">24</div>
-            <div class="queue-num">55</div>
-            <div class="queue-num">6</div>
-            <div class="sla-cell sla-warn">1h 22m</div>
-            <div class="queue-chevron">&rsaquo;</div>
-          </div>
-          <div class="queue-table-row warn-bg">
-            <div class="queue-name-cell">
-              <div class="health-dot warning"></div>
-              <div><div class="queue-name">General IT</div><div class="queue-desc">Catch-all for unrouted requests</div></div>
-            </div>
-            <div class="queue-num" style="color:var(--warning);">12</div>
-            <div class="queue-num">21</div>
-            <div class="queue-num">2</div>
-            <div class="sla-cell sla-warn">3h 45m</div>
-            <div class="queue-chevron">&rsaquo;</div>
-          </div>
+      <!-- Filter buttons + secondary tabs -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <div class="filter-row" style="margin-bottom:0;">
+          <button class="toggle-btn active" onclick="filterQueues(this,'all')">All</button>
+          <button class="toggle-btn" onclick="filterQueues(this,'my')">My Queues</button>
+          <button class="toggle-btn" onclick="filterQueues(this,'archived')">Archived</button>
+        </div>
+        <div class="tab-bar" style="border-bottom:none; margin-bottom:0; gap:0;">
+          <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
+          <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
+          <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
         </div>
       </div>
 
-      <!-- ALL QUEUES tab -->
-      <div id="queue-tab-all" style="display:none;">
+      <!-- QUEUES (unified — filtered by pills) -->
+      <div id="queue-tab-queues">
         <div class="card" style="padding:0; overflow:hidden;">
           <div class="queue-table-header">
             <span>Queue <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
-            <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); font-size:10px; vertical-align:middle;">83</span></span>
+            <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); border-color:rgba(245,158,11,.2); font-size:10px; vertical-align:middle;">83</span></span>
             <span style="text-align:center;">Open</span>
             <span style="text-align:center;">Operators</span>
             <span style="text-align:center;">Next SLA</span>
             <span></span>
           </div>
-          <div class="queue-table-row critical-bg" onclick="showPage('overview')">
+          <div class="queue-table-row" onclick="showPage('overview')">
             <div class="queue-name-cell">
-              <div class="health-dot critical"></div>
+              <div class="health-icon critical"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg></div>
               <div><div class="queue-name">Network Operations</div><div class="queue-desc">Infrastructure incidents, connectivity</div></div>
             </div>
             <div class="queue-num" style="color:var(--destructive);">32</div>
             <div class="queue-num">50</div>
             <div class="queue-num">4</div>
-            <div class="sla-cell sla-breach">18m</div>
+            <div class="sla-cell sla-breach"><span class="sla-dot"></span>18m</div>
             <div class="queue-chevron">&rsaquo;</div>
           </div>
-          <div class="queue-table-row warn-bg">
+          <div class="queue-table-row">
             <div class="queue-name-cell">
-              <div class="health-dot warning"></div>
+              <div class="health-icon warning"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L1 14h14L8 1.5z"/><line x1="8" y1="6.5" x2="8" y2="9.5"/><circle cx="8" cy="12" r="0.5" fill="currentColor" stroke="none"/></svg></div>
               <div><div class="queue-name">Desktop Support</div><div class="queue-desc">Hardware, software, access requests</div></div>
             </div>
             <div class="queue-num" style="color:var(--warning);">24</div>
@@ -465,18 +429,18 @@
           </div>
           <div class="queue-table-row">
             <div class="queue-name-cell">
-              <div class="health-dot healthy"></div>
+              <div class="health-icon healthy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5 8l2 2 4-4"/></svg></div>
               <div><div class="queue-name">Security &amp; Compliance</div><div class="queue-desc">Vulnerability reports, access reviews</div></div>
             </div>
             <div class="queue-num">5</div>
             <div class="queue-num">17</div>
             <div class="queue-num">5</div>
-            <div class="sla-cell sla-ok">&lt; 1d</div>
+            <div class="sla-cell sla-ok">&gt; 1d</div>
             <div class="queue-chevron">&rsaquo;</div>
           </div>
           <div class="queue-table-row">
             <div class="queue-name-cell">
-              <div class="health-dot healthy"></div>
+              <div class="health-icon healthy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5 8l2 2 4-4"/></svg></div>
               <div><div class="queue-name">Cloud Infrastructure</div><div class="queue-desc">AWS, GCP provisioning and issues</div></div>
             </div>
             <div class="queue-num">8</div>
@@ -487,18 +451,18 @@
           </div>
           <div class="queue-table-row">
             <div class="queue-name-cell">
-              <div class="health-dot healthy"></div>
+              <div class="health-icon healthy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="7"/><path d="M5 8l2 2 4-4"/></svg></div>
               <div><div class="queue-name">Database Admin</div><div class="queue-desc">Schema changes, performance, backups</div></div>
             </div>
             <div class="queue-num">2</div>
             <div class="queue-num">9</div>
             <div class="queue-num">3</div>
-            <div class="sla-cell sla-ok">&lt; 1d</div>
+            <div class="sla-cell sla-ok">&gt; 1d</div>
             <div class="queue-chevron">&rsaquo;</div>
           </div>
-          <div class="queue-table-row warn-bg">
+          <div class="queue-table-row">
             <div class="queue-name-cell">
-              <div class="health-dot warning"></div>
+              <div class="health-icon warning"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5L1 14h14L8 1.5z"/><line x1="8" y1="6.5" x2="8" y2="9.5"/><circle cx="8" cy="12" r="0.5" fill="currentColor" stroke="none"/></svg></div>
               <div><div class="queue-name">General IT</div><div class="queue-desc">Catch-all for unrouted requests</div></div>
             </div>
             <div class="queue-num" style="color:var(--warning);">12</div>
@@ -695,34 +659,40 @@
       <div class="detail-columns">
         <div class="detail-main">
 
-          <!-- Unified workload table with unassigned header -->
+          <!-- Card 1: Unassigned Tickets -->
           <div class="section">
             <div class="section-header">
-              <div class="section-title">Workload</div>
+              <div class="section-title">Unassigned Tickets</div>
+            </div>
+            <div class="card" style="padding:20px; cursor:pointer;" title="View unassigned tickets">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <div>
+                  <div style="font-family:'Hanken Grotesk',sans-serif; font-size:20px; font-weight:700; color:var(--destructive);">32</div>
+                  <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">oldest waiting: 2h 14m</div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="sla-cell sla-breach" style="font-size:15px;"><span class="sla-dot"></span>18m</div>
+                  <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">next SLA deadline</div>
+                </div>
+                <div style="font-size:13px; font-weight:500; color:var(--text-muted);">View tickets &rarr;</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Operator Workload -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-title">Operator Workload</div>
               <button class="btn btn-sm btn-ghost" onclick="showPage('team')">Manage team &rarr;</button>
             </div>
             <div class="card" style="padding:0; overflow:hidden;">
-
-              <!-- Unassigned header row — critical threshold (32 > 25) -->
-              <div class="unassigned-row critical" title="View unassigned tickets">
-                <div>
-                  <div class="unassigned-label">32 Unassigned</div>
-                  <div class="unassigned-sub">oldest waiting: 2h 14m</div>
-                </div>
-                <div></div>
-                <div></div>
-                <div class="sla-cell sla-breach" style="opacity:1;">18m</div>
-                <div style="font-size:12px; font-weight:500; color:inherit; text-align:right;">View tickets &rarr;</div>
-              </div>
-
               <div class="op-table-header" style="cursor:pointer; user-select:none;">
                 <span>Operator <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
                 <span style="text-align:center;">Working <span class="badge badge-count" style="cursor:pointer; font-size:10px; vertical-align:middle;" title="View all 14 working tickets">14</span></span>
-                <span style="text-align:center; color:var(--info);">On Hold <span class="badge" style="background:var(--info-bg); color:var(--info); cursor:pointer; font-size:10px; vertical-align:middle;" title="View all 5 on-hold tickets">5</span></span>
+                <span style="text-align:center; color:var(--info);">On Hold <span class="badge" style="background:var(--info-bg); color:var(--info); border-color:rgba(45,212,168,.2); cursor:pointer; font-size:10px; vertical-align:middle;" title="View all 5 on-hold tickets">5</span></span>
                 <span style="text-align:center;">Next SLA</span>
                 <span style="border-left:1px solid var(--border); padding-left:8px;">All Queues <span class="badge badge-count" style="font-size:10px; vertical-align:middle;" title="28 assigned / 47 total capacity across operators">28/47</span></span>
               </div>
-              <!-- Jordan: 5 working + 4 on hold; avg SLA 2h 14m (yellow) -->
               <div class="op-row">
                 <div class="op-info clickable" title="View Jordan's tickets in this queue">
                   <div class="op-avatar avatar-blue">JC</div>
@@ -736,7 +706,6 @@
                   <div class="capacity-label">12/15</div>
                 </div>
               </div>
-              <!-- Morgan: 7 working, 0 on hold; avg SLA comfortable -->
               <div class="op-row">
                 <div class="op-info clickable" title="View Morgan's tickets in this queue">
                   <div class="op-avatar avatar-green">MP</div>
@@ -744,13 +713,12 @@
                 </div>
                 <div class="op-tickets clickable" title="Morgan's working tickets in this queue">7</div>
                 <div class="op-tickets clickable" style="color:var(--text-dim)" title="Morgan's on-hold tickets in this queue">0</div>
-                <div class="sla-cell sla-ok" title="Time until Morgan's next SLA deadline">&lt; 1d</div>
+                <div class="sla-cell sla-ok" title="Time until Morgan's next SLA deadline">&gt; 1d</div>
                 <div class="capacity-bar clickable" style="border-left:1px solid var(--border); padding-left:8px;" title="View all Morgan's tickets across queues">
                   <div class="capacity-track"><div class="capacity-fill medium" style="width:58%"></div></div>
                   <div class="capacity-label">7/12</div>
                 </div>
               </div>
-              <!-- Alex: unavailable, SLA will breach during OOO — pulsing -->
               <div class="op-row" style="opacity:.55;">
                 <div class="op-info clickable" title="View Alex's tickets in this queue">
                   <div class="op-avatar avatar-purple">AK</div>
@@ -758,13 +726,12 @@
                 </div>
                 <div class="op-tickets clickable" title="Alex's working tickets in this queue">2</div>
                 <div class="op-tickets clickable" style="color:var(--info)" title="Alex's on-hold tickets in this queue">1</div>
-                <div class="sla-cell sla-breach" style="opacity:1;" title="Next SLA expires while Alex is unavailable — tickets need reassignment">&#9888; 6h 30m</div>
+                <div class="sla-cell sla-breach" title="Next SLA expires while Alex is unavailable"><span class="sla-dot"></span>6h 30m</div>
                 <div class="capacity-bar clickable" style="border-left:1px solid var(--border); padding-left:8px;" title="View all Alex's tickets across queues">
                   <div class="capacity-track"><div class="capacity-fill high" style="width:90%"></div></div>
                   <div class="capacity-label">9/10</div>
                 </div>
               </div>
-              <!-- Taylor: 0 tickets, no SLA -->
               <div class="op-row">
                 <div class="op-info clickable" title="View Taylor's tickets in this queue">
                   <div class="op-avatar avatar-orange">TR</div>
@@ -778,51 +745,52 @@
                   <div class="capacity-label">0/10</div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <!-- Collapsible guest assignees -->
-              <div class="guest-toggle" onclick="toggleGuests()" style="display:grid; grid-template-columns: 1fr 110px 110px 100px 160px; gap:12px;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <span class="guest-toggle-arrow" id="guest-arrow">&#9654;</span>
-                  <span><strong>3 other assignees</strong> &middot; 6 tickets</span>
+          <!-- Card 3: Other Assignees -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-title">Other Assignees <span class="section-title-muted">&middot; 6 tickets</span></div>
+            </div>
+            <div class="card" style="padding:0; overflow:hidden;">
+              <div class="op-table-header">
+                <span>Assignee</span>
+                <span style="text-align:center;">Working</span>
+                <span style="text-align:center; color:var(--info);">On Hold</span>
+                <span style="text-align:center;">Next SLA</span>
+                <span></span>
+              </div>
+              <div class="op-row">
+                <div class="op-info">
+                  <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">ST</div>
+                  <div><div class="op-name">Sam Torres</div><div class="guest-label">not an operator</div></div>
                 </div>
-                <div></div>
-                <div></div>
-                <div class="sla-cell sla-critical">45m</div>
+                <div class="op-tickets">3</div>
+                <div class="op-tickets" style="color:var(--text-dim)">0</div>
+                <div class="sla-cell sla-ok">&gt; 1d</div>
                 <div></div>
               </div>
-              <div class="guest-rows collapsed" id="guest-rows">
-                <div class="guest-row">
-                  <div class="op-info">
-                    <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">ST</div>
-                    <div><div class="op-name">Sam Torres</div><div class="guest-label">not an operator</div></div>
-                  </div>
-                  <div class="op-tickets">3</div>
-                  <div class="op-tickets" style="color:var(--text-dim)">0</div>
-                  <div class="sla-cell sla-ok">&lt; 1d</div>
-                  <div style="border-left:1px solid var(--border); padding-left:8px; font-size:11px; color:var(--text-dim);">&mdash;</div>
+              <div class="op-row">
+                <div class="op-info">
+                  <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">DW</div>
+                  <div><div class="op-name">Dana Wright</div><div class="guest-label">not an operator</div></div>
                 </div>
-                <div class="guest-row">
-                  <div class="op-info">
-                    <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">DW</div>
-                    <div><div class="op-name">Dana Wright</div><div class="guest-label">not an operator</div></div>
-                  </div>
-                  <div class="op-tickets">2</div>
-                  <div class="op-tickets" style="color:var(--info)">1</div>
-                  <div class="sla-cell sla-critical">45m</div>
-                  <div style="border-left:1px solid var(--border); padding-left:8px; font-size:11px; color:var(--text-dim);">&mdash;</div>
-                </div>
-                <div class="guest-row">
-                  <div class="op-info">
-                    <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">RF</div>
-                    <div><div class="op-name">Riley Fox</div><div class="guest-label">not an operator</div></div>
-                  </div>
-                  <div class="op-tickets">1</div>
-                  <div class="op-tickets" style="color:var(--text-dim)">0</div>
-                  <div class="sla-cell sla-ok">&lt; 1d</div>
-                  <div style="border-left:1px solid var(--border); padding-left:8px; font-size:11px; color:var(--text-dim);">&mdash;</div>
-                </div>
+                <div class="op-tickets">2</div>
+                <div class="op-tickets" style="color:var(--info)">1</div>
+                <div class="sla-cell sla-critical"><span class="sla-dot"></span>45m</div>
+                <div></div>
               </div>
-
+              <div class="op-row">
+                <div class="op-info">
+                  <div class="op-avatar" style="background:rgba(255,255,255,.08); color:var(--text-dim);">RF</div>
+                  <div><div class="op-name">Riley Fox</div><div class="guest-label">not an operator</div></div>
+                </div>
+                <div class="op-tickets">1</div>
+                <div class="op-tickets" style="color:var(--text-dim)">0</div>
+                <div class="sla-cell sla-ok">&gt; 1d</div>
+                <div></div>
+              </div>
             </div>
           </div>
 
@@ -1132,27 +1100,21 @@ function showPage(id) {
 }
 
 function showQueueTab(tab) {
-  var ids = ['my','all','routing','reporting'];
+  var ids = ['queues','routing','reporting'];
   ids.forEach(function(id) {
-    document.getElementById('queue-tab-' + id).style.display = id === tab ? 'block' : 'none';
+    var el = document.getElementById('queue-tab-' + id);
+    if (el) el.style.display = id === tab ? 'block' : 'none';
   });
-  var tabs = document.querySelectorAll('#page-list .tab-item');
-  var tabMap = {'my':0, 'all':1, 'routing':2, 'reporting':3};
+  var tabs = document.querySelectorAll('#page-list .tab-bar .tab-item');
+  var tabMap = {'queues':0, 'routing':1, 'reporting':2};
   tabs.forEach(function(t,i) { t.classList.toggle('active', i === tabMap[tab]); });
 }
 
-function toggleGuests() {
-  const rows = document.getElementById('guest-rows');
-  const arrow = document.getElementById('guest-arrow');
-  if (rows.classList.contains('collapsed')) {
-    rows.classList.remove('collapsed');
-    rows.classList.add('expanded');
-    arrow.classList.add('open');
-  } else {
-    rows.classList.remove('expanded');
-    rows.classList.add('collapsed');
-    arrow.classList.remove('open');
-  }
+function filterQueues(btn, filter) {
+  // Toggle active state on filter buttons
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  // In a real app this would filter the table; mockup just toggles the active style
 }
 
 function showSettingsSection(id) {
