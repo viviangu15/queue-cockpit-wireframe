@@ -385,22 +385,22 @@
         </div>
       </div>
 
-      <!-- Primary tabs -->
-      <div class="tab-bar">
-        <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
-        <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
-        <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
+      <!-- Primary tabs + segment control -->
+      <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin-bottom:24px;">
+        <div class="tab-bar" style="border-bottom:none; margin-bottom:0;">
+          <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
+          <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
+          <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
+        </div>
+        <div class="segment-control" id="queue-filter-control" style="margin-bottom:8px;">
+          <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
+          <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
+          <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
+        </div>
       </div>
 
       <!-- QUEUES (unified — filtered by pills) -->
       <div id="queue-tab-queues">
-          <div style="padding:0 0 16px; display:flex; align-items:center;">
-            <div class="segment-control">
-              <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
-              <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
-              <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
-            </div>
-          </div>
           <div class="queue-table-header">
             <span>Queue</span>
             <span style="text-align:center;">Unassigned <span class="badge" style="background:var(--warning-bg); color:var(--warning); border-color:rgba(245,158,11,.2); font-size:10px; vertical-align:middle;">83</span></span>
