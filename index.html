@@ -1093,10 +1093,7 @@
 <script>
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.page-nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  const navMap = { 'list': 0, 'overview': 1, 'team': 2, 'settings': 3 };
-  document.querySelectorAll('.page-nav-item')[navMap[id]].classList.add('active');
 }
 
 function showQueueTab(tab) {
