@@ -678,93 +678,102 @@
         <div class="tab-item" onclick="showPage('settings')">Settings</div>
       </div>
 
-      <!-- Overview: queue health at a glance -->
-      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px;">
-        <!-- Unassigned -->
+      <!-- Stat cards -->
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;">
         <div class="card" style="padding:20px; cursor:pointer;" title="View unassigned tickets">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <div class="stat-label">Unassigned</div>
-            <div style="font-size:12px; font-weight:500; color:var(--text-muted);">View &rarr;</div>
+            <div style="font-size:11px; color:var(--text-dim);">View &rarr;</div>
           </div>
-          <div style="font-family:'Hanken Grotesk',sans-serif; font-size:28px; font-weight:700; color:var(--destructive);">32</div>
-          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">oldest waiting: 2h 14m</div>
+          <div style="font-family:'DM Sans',sans-serif; font-size:32px; font-weight:700; color:var(--destructive);">32</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">oldest: 2h 14m</div>
         </div>
-        <!-- Next SLA -->
         <div class="card" style="padding:20px;">
-          <div class="stat-label" style="margin-bottom:12px;">Next SLA Deadline</div>
-          <div style="font-family:'Hanken Grotesk',sans-serif; font-size:28px; font-weight:700; color:var(--destructive);">18m</div>
-          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Network Ops &mdash; unassigned</div>
+          <div class="stat-label" style="margin-bottom:10px;">Next SLA</div>
+          <div style="font-family:'DM Sans',sans-serif; font-size:32px; font-weight:700; color:var(--destructive);">18m</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">unassigned ticket</div>
         </div>
-        <!-- Open Tickets -->
         <div class="card" style="padding:20px;">
-          <div class="stat-label" style="margin-bottom:12px;">Open Tickets</div>
-          <div style="font-family:'Hanken Grotesk',sans-serif; font-size:28px; font-weight:700;">58</div>
-          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">across 4 operators + 3 others</div>
+          <div class="stat-label" style="margin-bottom:10px;">Open</div>
+          <div style="font-family:'DM Sans',sans-serif; font-size:32px; font-weight:700;">58</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">4 operators + 3 others</div>
+        </div>
+        <div class="card" style="padding:20px;">
+          <div class="stat-label" style="margin-bottom:10px;">Avg Resolution</div>
+          <div style="font-family:'DM Sans',sans-serif; font-size:32px; font-weight:700; color:var(--success);">4.2h</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">last 7 days</div>
         </div>
       </div>
 
-      <div class="detail-columns">
-        <div class="detail-main">
+      <!-- Priority + Config row -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
 
-          <!-- Priority Breakdown -->
-          <div class="section">
-            <div class="section-header">
-              <div class="section-title">Priority Breakdown</div>
+        <!-- Priority Breakdown -->
+        <div class="card" style="padding:20px;">
+          <div class="stat-label" style="margin-bottom:16px;">Priority Breakdown</div>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">P1 &mdash; Critical</span>
+                <span style="font-weight:500;">5</span>
+              </div>
+              <div style="height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
+                <div style="width:10%; height:100%; background:var(--destructive); border-radius:3px;"></div>
+              </div>
             </div>
-            <div class="card" style="padding:20px;">
-              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px;">
-                <div>
-                  <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
-                    <span style="color:var(--text-muted);">P1 &mdash; Critical</span>
-                    <span style="font-weight:600;">5</span>
-                  </div>
-                  <div style="height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
-                    <div style="width:10%; height:100%; background:var(--destructive); border-radius:3px;"></div>
-                  </div>
-                </div>
-                <div>
-                  <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
-                    <span style="color:var(--text-muted);">P2 &mdash; High</span>
-                    <span style="font-weight:600;">20</span>
-                  </div>
-                  <div style="height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
-                    <div style="width:40%; height:100%; background:var(--warning); border-radius:3px;"></div>
-                  </div>
-                </div>
-                <div>
-                  <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
-                    <span style="color:var(--text-muted);">P3 &mdash; Normal</span>
-                    <span style="font-weight:600;">25</span>
-                  </div>
-                  <div style="height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
-                    <div style="width:50%; height:100%; background:var(--primary); border-radius:3px;"></div>
-                  </div>
-                </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">P2 &mdash; High</span>
+                <span style="font-weight:500;">20</span>
+              </div>
+              <div style="height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
+                <div style="width:40%; height:100%; background:var(--warning); border-radius:3px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">P3 &mdash; Normal</span>
+                <span style="font-weight:500;">25</span>
+              </div>
+              <div style="height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
+                <div style="width:50%; height:100%; background:var(--primary); border-radius:3px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                <span style="color:var(--text-muted);">P4 &mdash; Low</span>
+                <span style="font-weight:500;">8</span>
+              </div>
+              <div style="height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden;">
+                <div style="width:16%; height:100%; background:var(--text-dim); border-radius:3px;"></div>
               </div>
             </div>
           </div>
-
         </div>
 
-        <!-- Sidebar -->
-        <div class="detail-sidebar">
-          <div class="card side-card" style="border-style:dashed;">
-            <div class="side-card-title">Resources</div>
-            <div style="font-size:12px; color:var(--text-dim); padding:8px 0;">Future: queue-specific docs, runbooks, knowledge base links</div>
-          </div>
-
-          <div class="card side-card">
-            <div class="side-card-title">Configuration</div>
-            <div class="side-item">
-              <span class="side-item-label">Assignment</span>
-              <span class="side-item-value">Load-balanced</span>
+        <!-- Configuration -->
+        <div class="card" style="padding:20px;">
+          <div class="stat-label" style="margin-bottom:16px;">Configuration</div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid var(--border);">
+              <span style="font-size:13px; color:var(--text-muted);">Assignment</span>
+              <span style="font-size:13px; font-weight:500;">Load-balanced</span>
             </div>
-            <div class="side-item">
-              <span class="side-item-label">Business hours</span>
-              <span class="side-item-value">Mon&ndash;Fri, 8a&ndash;6p</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid var(--border);">
+              <span style="font-size:13px; color:var(--text-muted);">Business hours</span>
+              <span style="font-size:13px; font-weight:500;">Mon&ndash;Fri, 8a&ndash;6p</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid var(--border);">
+              <span style="font-size:13px; color:var(--text-muted);">Lead</span>
+              <span style="font-size:13px; font-weight:500;">Jordan Chen</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; color:var(--text-muted);">Created</span>
+              <span style="font-size:13px; font-weight:500;">Mar 1, 2026</span>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>
