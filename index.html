@@ -133,11 +133,11 @@
 
   /* Segmented control */
   .segment-control { display: inline-flex; background: var(--bg-raised); border: 1px solid var(--border-light);
-    border-radius: var(--radius); padding: 3px; gap: 2px; }
-  .segment-item { padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    border-radius: 999px; padding: 4px; gap: 2px; }
+  .segment-item { padding: 7px 18px; border-radius: 999px; font-size: 13px; font-weight: 500;
     color: var(--text-muted); cursor: pointer; transition: all .15s; user-select: none; white-space: nowrap; }
   .segment-item:hover { color: var(--text); }
-  .segment-item.active { background: var(--bg-card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+  .segment-item.active { background: var(--accent); color: #fff; }
 
   /* Blinking SLA dot */
   .sla-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--destructive);
@@ -395,7 +395,7 @@
       <!-- QUEUES (unified — filtered by pills) -->
       <div id="queue-tab-queues">
           <div class="queue-table-header" style="align-items:center;">
-            <span style="display:flex; align-items:center; gap:12px;">Queue
+            <span style="display:flex; align-items:center;">
               <span class="segment-control" style="font-size:12px; text-transform:none; letter-spacing:0; font-family:'Inter',sans-serif;">
                 <span class="segment-item active" onclick="event.stopPropagation(); filterQueues(this,'all')">All</span>
                 <span class="segment-item" onclick="event.stopPropagation(); filterQueues(this,'my')">My Queues</span>
