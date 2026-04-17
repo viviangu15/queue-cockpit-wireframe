@@ -385,22 +385,20 @@
         </div>
       </div>
 
-      <!-- Filter buttons + secondary tabs -->
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-        <div class="segment-control">
-          <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
-          <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
-          <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
-        </div>
-        <div class="tab-bar" style="border-bottom:none; margin-bottom:0; gap:0;">
-          <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
-          <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
-          <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
-        </div>
+      <!-- Primary tabs -->
+      <div class="tab-bar">
+        <div class="tab-item active" onclick="showQueueTab('queues')">Queues</div>
+        <div class="tab-item" onclick="showQueueTab('routing')">Routing <span class="badge badge-default" style="font-size:9px; vertical-align:middle; margin-left:4px;">Soon</span></div>
+        <div class="tab-item" onclick="showQueueTab('reporting')">Reporting</div>
       </div>
 
       <!-- QUEUES (unified — filtered by pills) -->
       <div id="queue-tab-queues">
+        <div class="segment-control" style="margin-bottom:16px;">
+          <div class="segment-item active" onclick="filterQueues(this,'all')">All</div>
+          <div class="segment-item" onclick="filterQueues(this,'my')">My Queues</div>
+          <div class="segment-item" onclick="filterQueues(this,'archived')">Archived</div>
+        </div>
         <div class="card" style="padding:0; overflow:hidden;">
           <div class="queue-table-header">
             <span>Queue <span style="font-size:9px; opacity:.7;">&#9650;</span></span>
