@@ -1335,9 +1335,8 @@ function streamDescription(queueName) {
 }
 
 function onDescFocus() {
-  if (aiState.streaming || aiState.generated) return; // Don't interrupt AI
-  aiState.userTyping = true;
-  hideAiOverlay();
+  // Don't interrupt if AI is streaming or has a suggestion showing
+  if (aiState.streaming || aiState.generated) return;
 }
 function onDescType() {
   var desc = document.getElementById('cq-desc');
