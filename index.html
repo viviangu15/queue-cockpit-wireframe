@@ -376,25 +376,31 @@
   .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 16px 24px;
     border-top: 1px solid var(--border); }
 
-  /* ── AI assist ── */
-  .form-label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .form-label-row .form-label { margin-bottom: 0; }
-  .ai-btn { display: inline-flex; align-items: center; gap: 4px; padding: 0; font-size: 11px;
-    font-weight: 500; color: var(--text-dim); background: none; border: none;
-    cursor: pointer; transition: all .15s; white-space: nowrap; }
-  .ai-btn:hover { color: var(--text-muted); }
-  .ai-btn svg { width: 11px; height: 11px; }
-  .ai-btn.loading { pointer-events: none; opacity: .7; }
-  .ai-suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .ai-chip { padding: 5px 12px; font-size: 12px; color: var(--text-muted); background: var(--bg-glass);
-    border: 1px solid var(--border); border-radius: 999px; cursor: pointer; transition: all .15s; }
-  .ai-chip:hover { color: var(--text); border-color: var(--border-light); background: var(--bg-hover); }
-  .ai-shimmer { background: linear-gradient(90deg, var(--bg-glass) 25%, var(--bg-hover) 50%, var(--bg-glass) 75%);
-    background-size: 200% 100%; animation: ai-shimmer 1.5s infinite; border-radius: 999px;
-    height: 28px; width: 140px; }
-  @keyframes ai-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  .ai-generated { border-color: var(--accent); transition: border-color .3s; }
+  /* ── AI description ── */
+  .desc-wrap { position: relative; }
+  .desc-wrap .form-textarea { transition: border-color .2s; }
+  .desc-wrap .form-textarea.ai-placeholder { color: transparent; }
+  .desc-wrap .ai-overlay { position: absolute; top: 1px; left: 1px; right: 1px; bottom: 1px;
+    padding: 8px 12px; font-size: 13px; color: var(--text-dim); pointer-events: none;
+    white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; font-family: 'Inter', sans-serif; }
+  .desc-wrap .ai-overlay.streaming { color: var(--text-muted); }
+  .ai-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
+  .ai-actions .btn { font-size: 12px; padding: 5px 12px; }
+  .ai-actions .btn:disabled { opacity: .4; pointer-events: none; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  .ai-cursor { display: inline-block; width: 1px; height: 14px; background: var(--text-muted);
+    margin-left: 1px; vertical-align: text-bottom; animation: blink .8s infinite; }
+
+  /* ── More options collapse ── */
+  .more-options-toggle { display: flex; align-items: center; gap: 6px; padding: 0; font-size: 12px;
+    font-weight: 500; color: var(--text-dim); background: none; border: none; cursor: pointer;
+    transition: color .15s; margin-top: 4px; }
+  .more-options-toggle:hover { color: var(--text-muted); }
+  .more-options-toggle .chevron { font-size: 10px; transition: transform .2s; display: inline-block; }
+  .more-options-toggle .chevron.open { transform: rotate(90deg); }
+  .more-options-body { overflow: hidden; max-height: 0; transition: max-height .25s ease; }
+  .more-options-body.open { max-height: 400px; }
+  .more-options-inner { padding-top: 16px; }
 
   /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; }
@@ -1171,68 +1177,68 @@
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <div class="form-label-row">
-          <label class="form-label">Queue name</label>
-          <button class="ai-btn" id="ai-name-btn" onclick="generateQueueName()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-6.93-2.93l2.83-2.83m8.2-8.2l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.2 8.2l2.83 2.83"/></svg>
-            Suggest
-          </button>
-        </div>
-        <input class="form-input" id="ai-queue-name" type="text" placeholder="e.g. Network Operations">
-        <div id="ai-name-suggestions" class="ai-suggestions" style="display:none;"></div>
+        <label class="form-label">Queue name</label>
+        <input class="form-input" id="cq-name" type="text" placeholder="e.g. Network Operations" oninput="onQueueNameChange()" onblur="onQueueNameBlur()">
       </div>
       <div class="form-group">
-        <div class="form-label-row">
-          <label class="form-label">Description</label>
-          <button class="ai-btn" id="ai-desc-btn" onclick="generateDescription()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-6.93-2.93l2.83-2.83m8.2-8.2l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.2 8.2l2.83 2.83"/></svg>
-            Write for me
-          </button>
+        <label class="form-label">Description</label>
+        <div class="desc-wrap">
+          <textarea class="form-textarea" id="cq-desc" rows="3" placeholder="Brief description of what this queue handles" onfocus="onDescFocus()" oninput="onDescType()"></textarea>
+          <div class="ai-overlay" id="cq-ai-overlay"></div>
         </div>
-        <textarea class="form-textarea" id="ai-queue-desc" rows="2" placeholder="Brief description of what this queue handles"></textarea>
-        <div id="ai-desc-suggestions" class="ai-suggestions" style="display:none;"></div>
+        <div class="ai-actions" id="cq-ai-actions" style="display:none;">
+          <button class="btn btn-sm" id="cq-change-btn" disabled onclick="onChangeIt()">Change it</button>
+          <button class="btn btn-sm btn-primary" id="cq-use-btn" disabled onclick="onUseIt()">Use</button>
+        </div>
         <div class="form-hint">Visible to operators and in the queue list.</div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Assignment method</label>
-          <select class="form-input form-select">
-            <option>Manual pickup</option>
-            <option>Round-robin</option>
-            <option selected>Load-balanced</option>
-          </select>
-          <div class="form-hint">How tickets are distributed to operators.</div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Priority</label>
-          <select class="form-input form-select">
-            <option selected>Normal</option>
-            <option>High</option>
-            <option>Critical</option>
-          </select>
-          <div class="form-hint">Default priority for new tickets.</div>
-        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Lead operator</label>
-        <select class="form-input form-select">
-          <option value="" disabled selected>Select an operator</option>
-          <option>Jordan Chen</option>
+        <select class="form-input form-select" id="cq-lead">
+          <option selected>You (Jordan Chen)</option>
           <option>Morgan Park</option>
           <option>Alex Kim</option>
           <option>Taylor Reeves</option>
           <option>Sam Okafor</option>
         </select>
-        <div class="form-hint">Primary point of contact for this queue.</div>
+        <div class="form-hint">Defaults to you. Change in queue settings anytime.</div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Business hours</label>
-        <select class="form-input form-select">
-          <option selected>Default (Mon–Fri, 08:00–18:00)</option>
-          <option>24/7</option>
-          <option>Custom (configure after creation)</option>
-        </select>
-        <div class="form-hint">When the queue is operational. Affects SLA calculations.</div>
+
+      <button class="more-options-toggle" onclick="toggleMoreOptions()">
+        <span class="chevron" id="cq-more-chevron">&#9654;</span> More options
+      </button>
+      <div class="more-options-body" id="cq-more-body">
+        <div class="more-options-inner">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Assignment method</label>
+              <select class="form-input form-select">
+                <option>Manual pickup</option>
+                <option>Round-robin</option>
+                <option selected>Load-balanced</option>
+              </select>
+              <div class="form-hint">How tickets are distributed.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Default priority</label>
+              <select class="form-input form-select">
+                <option selected>Normal</option>
+                <option>High</option>
+                <option>Critical</option>
+              </select>
+              <div class="form-hint">For new incoming tickets.</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Business hours</label>
+            <select class="form-input form-select">
+              <option selected>Default (Mon–Fri, 08:00–18:00)</option>
+              <option>24/7</option>
+              <option>Custom (configure after creation)</option>
+            </select>
+            <div class="form-hint">Affects SLA calculations. Configure in settings after creation.</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -1243,119 +1249,141 @@
 </div>
 
 <script>
+var aiState = { streaming: false, generated: '', timer: null, userTyping: false };
+
 function openCreateQueue() {
   document.getElementById('create-queue-modal').classList.add('open');
-  // Reset AI state when opening
-  document.getElementById('ai-name-suggestions').style.display = 'none';
-  document.getElementById('ai-desc-suggestions').style.display = 'none';
+  resetCreateQueue();
 }
 function closeCreateQueue() {
   document.getElementById('create-queue-modal').classList.remove('open');
+  if (aiState.timer) clearTimeout(aiState.timer);
+}
+function resetCreateQueue() {
+  var name = document.getElementById('cq-name');
+  var desc = document.getElementById('cq-desc');
+  var overlay = document.getElementById('cq-ai-overlay');
+  var actions = document.getElementById('cq-ai-actions');
+  name.value = ''; desc.value = '';
+  overlay.textContent = ''; overlay.className = 'ai-overlay';
+  actions.style.display = 'none';
+  desc.classList.remove('ai-placeholder');
+  aiState = { streaming: false, generated: '', timer: null, userTyping: false };
+  document.getElementById('cq-more-body').classList.remove('open');
+  document.getElementById('cq-more-chevron').classList.remove('open');
 }
 
-function generateQueueName() {
-  var btn = document.getElementById('ai-name-btn');
-  var container = document.getElementById('ai-name-suggestions');
-  var input = document.getElementById('ai-queue-name');
-
-  // Show loading
-  btn.classList.add('loading');
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite"><path d="M12 2v4m0 12v4m-6.93-2.93l2.83-2.83m8.2-8.2l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.2 8.2l2.83 2.83"/></svg> Thinking\u2026';
-  container.innerHTML = '<div class="ai-shimmer"></div><div class="ai-shimmer" style="width:100px"></div><div class="ai-shimmer" style="width:120px"></div>';
-  container.style.display = 'flex';
-
-  // Simulate AI response
-  setTimeout(function() {
-    btn.classList.remove('loading');
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-6.93-2.93l2.83-2.83m8.2-8.2l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.2 8.2l2.83 2.83"/></svg> Suggest name';
-
-    var suggestions = ['Network Operations', 'Infrastructure Support', 'Cloud & DevOps', 'Security Incidents', 'Desktop Support', 'Access Requests'];
-    // Pick 3 random
-    var picked = suggestions.sort(function() { return 0.5 - Math.random(); }).slice(0, 3);
-    container.innerHTML = picked.map(function(s) {
-      return '<span class="ai-chip" onclick="pickName(this)">' + s + '</span>';
-    }).join('');
-  }, 1200);
+function onQueueNameChange() {
+  // Clear any pending generation
+  if (aiState.timer) clearTimeout(aiState.timer);
+}
+function onQueueNameBlur() {
+  var name = document.getElementById('cq-name').value.trim();
+  var desc = document.getElementById('cq-desc');
+  // Only auto-generate if name exists, desc is empty, and user hasn't typed
+  if (name && !desc.value && !aiState.userTyping) {
+    aiState.timer = setTimeout(function() { streamDescription(name); }, 400);
+  }
 }
 
-function pickName(chip) {
-  var input = document.getElementById('ai-queue-name');
-  input.value = chip.textContent;
-  input.classList.add('ai-generated');
-  setTimeout(function() { input.classList.remove('ai-generated'); }, 1000);
-  // Auto-generate description based on name
-  generateDescriptionFor(chip.textContent);
-}
-
-function generateDescription() {
-  var name = document.getElementById('ai-queue-name').value.trim();
-  generateDescriptionFor(name || 'this queue');
-}
-
-function generateDescriptionFor(queueName) {
-  var btn = document.getElementById('ai-desc-btn');
-  var container = document.getElementById('ai-desc-suggestions');
-  var textarea = document.getElementById('ai-queue-desc');
-
-  btn.classList.add('loading');
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite"><path d="M12 2v4m0 12v4m-6.93-2.93l2.83-2.83m8.2-8.2l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.2 8.2l2.83 2.83"/></svg> Writing\u2026';
-  container.innerHTML = '<div class="ai-shimmer" style="width:100%"></div><div class="ai-shimmer" style="width:100%"></div>';
-  container.style.display = 'flex';
+function streamDescription(queueName) {
+  var desc = document.getElementById('cq-desc');
+  var overlay = document.getElementById('cq-ai-overlay');
+  var actions = document.getElementById('cq-ai-actions');
+  var changeBtn = document.getElementById('cq-change-btn');
+  var useBtn = document.getElementById('cq-use-btn');
 
   var descMap = {
-    'Network Operations': [
-      'Infrastructure incidents, connectivity issues, and network monitoring alerts',
-      'Handles network outages, firewall changes, VPN issues, and connectivity requests',
-      'Escalation queue for network-related incidents and infrastructure changes'
-    ],
-    'Infrastructure Support': [
-      'Server provisioning, infrastructure incidents, and system maintenance requests',
-      'Handles compute, storage, and infrastructure-level support tickets',
-      'Central queue for all infrastructure-related issues and change requests'
-    ],
-    'Cloud & DevOps': [
-      'AWS/GCP provisioning, CI/CD pipeline issues, and cloud infrastructure requests',
-      'Manages cloud resource requests, deployment failures, and DevOps tooling support',
-      'Queue for cloud platform issues, container orchestration, and deployment support'
-    ],
-    'Security Incidents': [
-      'Vulnerability reports, access reviews, and security incident response',
-      'Handles security alerts, compliance issues, and access control requests',
-      'Triage queue for security events, penetration test findings, and audit actions'
-    ],
-    'Desktop Support': [
-      'Hardware issues, software installation, and end-user access requests',
-      'Handles laptop/desktop problems, peripheral setup, and application support',
-      'First-line support for employee hardware, software, and workspace issues'
-    ],
-    'Access Requests': [
-      'Permission grants, role changes, and application access provisioning',
-      'Handles new user onboarding access, permission escalations, and deprovisioning',
-      'Queue for all access-related requests including SSO, VPN, and SaaS tools'
-    ]
+    'network operations': 'Handles infrastructure incidents, network outages, firewall changes, VPN issues, and connectivity monitoring alerts. Escalation path for all network-related P1/P2 incidents.',
+    'desktop support': 'First-line support for employee hardware, software installation, peripheral setup, and workspace access requests. Covers laptop issues, application support, and equipment provisioning.',
+    'general it': 'Catch-all queue for unrouted IT requests including general troubleshooting, access issues, and miscellaneous support tickets that don\u2019t fit specialized queues.',
+    'security incidents': 'Triage queue for vulnerability reports, security alerts, compliance audit findings, access reviews, and incident response coordination.',
+    'cloud infrastructure': 'AWS and GCP provisioning requests, deployment failures, container orchestration issues, and cloud resource management support.',
+    'database admin': 'Schema change requests, query performance issues, backup and recovery operations, and database provisioning support.'
   };
+  var text = descMap[queueName.toLowerCase()] ||
+    'Handles incoming ' + queueName.toLowerCase() + ' tickets including issue triage, assignment, resolution tracking, and escalation. Covers all ' + queueName.toLowerCase() + '-related support requests.';
 
-  setTimeout(function() {
-    btn.classList.remove('loading');
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-6.93-2.93l2.83-2.83m8.2-8.2l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.2 8.2l2.83 2.83"/></svg> Write for me';
+  // Start streaming
+  aiState.streaming = true;
+  aiState.generated = '';
+  desc.value = '';
+  desc.classList.add('ai-placeholder');
+  overlay.className = 'ai-overlay streaming';
+  overlay.innerHTML = '<span class="ai-cursor"></span>';
+  actions.style.display = 'flex';
+  changeBtn.disabled = true;
+  useBtn.disabled = true;
 
-    var options = descMap[queueName] || [
-      'Handles incoming tickets related to ' + queueName.toLowerCase(),
-      'Central queue for ' + queueName.toLowerCase() + ' issues and requests',
-      'Triage and resolution queue for ' + queueName.toLowerCase() + ' support'
-    ];
-
-    container.innerHTML = options.map(function(d) {
-      return '<span class="ai-chip" onclick="pickDescription(this)" style="border-radius:var(--radius-sm);">' + d + '</span>';
-    }).join('');
-  }, 1000);
+  var i = 0;
+  var speed = 18;
+  function typeChar() {
+    if (i < text.length && aiState.streaming) {
+      aiState.generated += text[i];
+      overlay.innerHTML = aiState.generated + '<span class="ai-cursor"></span>';
+      i++;
+      aiState.timer = setTimeout(typeChar, speed + Math.random() * 12);
+    } else {
+      // Done streaming
+      aiState.streaming = false;
+      overlay.innerHTML = aiState.generated;
+      changeBtn.disabled = false;
+      useBtn.disabled = false;
+    }
+  }
+  typeChar();
 }
 
-function pickDescription(chip) {
-  var textarea = document.getElementById('ai-queue-desc');
-  textarea.value = chip.textContent;
-  textarea.classList.add('ai-generated');
-  setTimeout(function() { textarea.classList.remove('ai-generated'); }, 1000);
+function onDescFocus() {
+  if (aiState.streaming || aiState.generated) return; // Don't interrupt AI
+  aiState.userTyping = true;
+  hideAiOverlay();
+}
+function onDescType() {
+  var desc = document.getElementById('cq-desc');
+  if (desc.value.length > 0) {
+    aiState.userTyping = true;
+    hideAiOverlay();
+  }
+}
+function hideAiOverlay() {
+  var overlay = document.getElementById('cq-ai-overlay');
+  var actions = document.getElementById('cq-ai-actions');
+  var desc = document.getElementById('cq-desc');
+  if (aiState.streaming) { aiState.streaming = false; if (aiState.timer) clearTimeout(aiState.timer); }
+  overlay.textContent = '';
+  overlay.className = 'ai-overlay';
+  desc.classList.remove('ai-placeholder');
+  actions.style.display = 'none';
+}
+
+function onUseIt() {
+  var desc = document.getElementById('cq-desc');
+  desc.value = aiState.generated;
+  desc.classList.remove('ai-placeholder');
+  document.getElementById('cq-ai-overlay').textContent = '';
+  document.getElementById('cq-ai-overlay').className = 'ai-overlay';
+  document.getElementById('cq-ai-actions').style.display = 'none';
+  aiState.userTyping = true;
+}
+function onChangeIt() {
+  var desc = document.getElementById('cq-desc');
+  desc.value = aiState.generated;
+  desc.classList.remove('ai-placeholder');
+  document.getElementById('cq-ai-overlay').textContent = '';
+  document.getElementById('cq-ai-overlay').className = 'ai-overlay';
+  document.getElementById('cq-ai-actions').style.display = 'none';
+  aiState.userTyping = true;
+  desc.focus();
+  // Place cursor at end
+  desc.selectionStart = desc.selectionEnd = desc.value.length;
+}
+
+function toggleMoreOptions() {
+  var body = document.getElementById('cq-more-body');
+  var chevron = document.getElementById('cq-more-chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
 }
 
 function showPage(id) {
