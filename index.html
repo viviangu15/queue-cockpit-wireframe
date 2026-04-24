@@ -1181,7 +1181,13 @@
         <input class="form-input" id="cq-name" type="text" placeholder="e.g. Network Operations" oninput="onQueueNameChange()" onblur="onQueueNameBlur()">
       </div>
       <div class="form-group">
-        <label class="form-label">Description</label>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <label class="form-label" style="margin-bottom:0;">Description</label>
+          <button class="more-options-toggle" id="cq-write-btn" onclick="triggerWriteForMe()" style="margin-top:0; font-size:11px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M12 2v4m0 12v4m-6.93-2.93l2.83-2.83m8.2-8.2l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.2 8.2l2.83 2.83"/></svg>
+            Write for me
+          </button>
+        </div>
         <div class="desc-wrap">
           <textarea class="form-textarea" id="cq-desc" rows="3" placeholder="Brief description of what this queue handles" onfocus="onDescFocus()" oninput="onDescType()"></textarea>
           <div class="ai-overlay" id="cq-ai-overlay"></div>
@@ -1376,6 +1382,12 @@ function onChangeIt() {
   desc.focus();
   // Place cursor at end
   desc.selectionStart = desc.selectionEnd = desc.value.length;
+}
+
+function triggerWriteForMe() {
+  var name = document.getElementById('cq-name').value.trim();
+  if (!name) { document.getElementById('cq-name').focus(); return; }
+  streamDescription(name);
 }
 
 function toggleMoreOptions() {
