@@ -388,6 +388,8 @@
   .ai-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
   .ai-actions .btn { font-size: 12px; padding: 5px 12px; }
   .ai-actions .btn:disabled { opacity: .4; pointer-events: none; }
+  .ai-refine { display: flex; gap: 6px; margin-top: 6px; }
+  .ai-refine .form-input { font-size: 12px; padding: 6px 10px; flex: 1; }
   @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
   .ai-cursor { display: inline-block; width: 1px; height: 14px; background: var(--text-muted);
     margin-left: 1px; vertical-align: text-bottom; animation: blink .8s infinite; }
@@ -1193,6 +1195,10 @@
           <textarea class="form-textarea" id="cq-desc" rows="3" placeholder="Brief description of what this queue handles" onfocus="onDescFocus()" oninput="onDescType()"></textarea>
           <div class="ai-overlay" id="cq-ai-overlay"></div>
         </div>
+        <div class="ai-refine" id="cq-refine" style="display:none;">
+          <input class="form-input" id="cq-refine-input" type="text" placeholder="e.g. Make it shorter, mention SLA tracking..." onkeydown="if(event.key==='Enter'){event.preventDefault();submitRefine();}">
+          <button class="btn btn-sm btn-primary" onclick="submitRefine()" style="flex-shrink:0;">Refine</button>
+        </div>
         <div class="ai-actions" id="cq-ai-actions" style="display:none;">
           <button class="btn btn-sm" id="cq-change-btn" disabled onclick="onChangeIt()">Change it</button>
           <button class="btn btn-sm btn-primary" id="cq-use-btn" disabled onclick="onUseIt()">Use</button>
@@ -1276,6 +1282,7 @@ function resetCreateQueue() {
   actions.style.display = 'none';
   desc.classList.remove('ai-placeholder');
   aiState = { streaming: false, generated: '', timer: null, userTyping: false };
+  document.getElementById('cq-refine').style.display = 'none';
   document.getElementById('cq-more-body').classList.remove('open');
   document.getElementById('cq-more-chevron').classList.remove('open');
 }
@@ -1373,16 +1380,74 @@ function onUseIt() {
   aiState.userTyping = true;
 }
 function onChangeIt() {
-  var desc = document.getElementById('cq-desc');
-  desc.value = aiState.generated;
-  desc.classList.remove('ai-placeholder');
-  document.getElementById('cq-ai-overlay').textContent = '';
-  document.getElementById('cq-ai-overlay').className = 'ai-overlay';
   document.getElementById('cq-ai-actions').style.display = 'none';
-  aiState.userTyping = true;
-  desc.focus();
-  // Place cursor at end
-  desc.selectionStart = desc.selectionEnd = desc.value.length;
+  var refine = document.getElementById('cq-refine');
+  refine.style.display = 'flex';
+  document.getElementById('cq-refine-input').value = '';
+  document.getElementById('cq-refine-input').focus();
+}
+
+function submitRefine() {
+  var input = document.getElementById('cq-refine-input');
+  var feedback = input.value.trim();
+  if (!feedback) return;
+
+  document.getElementById('cq-refine').style.display = 'none';
+
+  var original = aiState.generated;
+  // Simulate refinement based on feedback keywords
+  var refined = original;
+  var fl = feedback.toLowerCase();
+  if (fl.includes('short')) {
+    refined = original.split('.').slice(0, 1).join('.') + '.';
+  } else if (fl.includes('sla')) {
+    refined = original.replace(/\.$/, '') + '. Includes SLA tracking and breach alerting for all ticket priorities.';
+  } else if (fl.includes('formal') || fl.includes('professional')) {
+    refined = 'This queue is responsible for the management and resolution of ' + original.charAt(0).toLowerCase() + original.slice(1);
+  } else if (fl.includes('simple') || fl.includes('casual')) {
+    refined = original.split('.')[0].replace('Handles ', 'For ').replace('First-line support for ', 'Helps with ') + '.';
+  } else {
+    // Generic variation — rephrase slightly
+    refined = original.replace('Handles ', 'Manages ').replace('First-line support', 'Primary support').replace('Catch-all queue', 'General-purpose queue').replace('Triage queue', 'Central queue');
+    if (refined === original) refined = original + ' ' + feedback.charAt(0).toUpperCase() + feedback.slice(1) + '.';
+  }
+
+  streamText(refined);
+}
+
+function streamText(text) {
+  var desc = document.getElementById('cq-desc');
+  var overlay = document.getElementById('cq-ai-overlay');
+  var actions = document.getElementById('cq-ai-actions');
+  var changeBtn = document.getElementById('cq-change-btn');
+  var useBtn = document.getElementById('cq-use-btn');
+
+  aiState.streaming = true;
+  aiState.generated = '';
+  desc.value = '';
+  desc.classList.add('ai-placeholder');
+  overlay.className = 'ai-overlay streaming';
+  overlay.innerHTML = '<span class="ai-cursor"></span>';
+  actions.style.display = 'flex';
+  changeBtn.disabled = true;
+  useBtn.disabled = true;
+
+  var i = 0;
+  var speed = 18;
+  function typeChar() {
+    if (i < text.length && aiState.streaming) {
+      aiState.generated += text[i];
+      overlay.innerHTML = aiState.generated + '<span class="ai-cursor"></span>';
+      i++;
+      aiState.timer = setTimeout(typeChar, speed + Math.random() * 12);
+    } else {
+      aiState.streaming = false;
+      overlay.innerHTML = aiState.generated;
+      changeBtn.disabled = false;
+      useBtn.disabled = false;
+    }
+  }
+  typeChar();
 }
 
 function triggerWriteForMe() {
